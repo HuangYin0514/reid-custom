@@ -1,7 +1,10 @@
-
-
+# To add a new cell, type '# %%'
+# To add a new markdown cell, type '# %% [markdown]'
+# %%
 import torchreid
 import torch
+
+# %%
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -45,10 +48,11 @@ engine = torchreid.engine.ImageSoftmaxEngine(
     label_smooth=True
 )
 
-engine.run(
-    save_dir='log/resnet50',
-    max_epoch=1,
-    eval_freq=1,
-    print_freq=1,
-    test_only=True
-)
+# engine.run(
+#     save_dir='log/resnet50',
+#     max_epoch=1,
+#     eval_freq=1,
+#     print_freq=1,
+#     test_only=True
+# )
+# %%
