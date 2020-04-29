@@ -3,3 +3,4 @@
 **.pyc
 **/torchreid.egg-info/
 **/reid-data/
+**/log/
