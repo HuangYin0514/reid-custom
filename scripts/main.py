@@ -25,30 +25,30 @@ model = torchreid.models.build_model(
 
 model = model.to(device)
 
-optimizer = torchreid.optim.build_optimizer(
-    model,
-    optim='adam',
-    lr=0.0003
-)
+# optimizer = torchreid.optim.build_optimizer(
+#     model,
+#     optim='adam',
+#     lr=0.0003
+# )
 
-scheduler = torchreid.optim.build_lr_scheduler(
-    optimizer,
-    lr_scheduler='single_step',
-    stepsize=20
-)
+# scheduler = torchreid.optim.build_lr_scheduler(
+#     optimizer,
+#     lr_scheduler='single_step',
+#     stepsize=20
+# )
 
-engine = torchreid.engine.ImageSoftmaxEngine(
-    datamanager,
-    model,
-    optimizer=optimizer,
-    scheduler=scheduler,
-    label_smooth=True
-)
+# engine = torchreid.engine.ImageSoftmaxEngine(
+#     datamanager,
+#     model,
+#     optimizer=optimizer,
+#     scheduler=scheduler,
+#     label_smooth=True
+# )
 
-engine.run(
-    save_dir='log/resnet50',
-    max_epoch=1,
-    eval_freq=1,
-    print_freq=1,
-    test_only=True
-)
+# engine.run(
+#     save_dir='log/resnet50',
+#     max_epoch=1,
+#     eval_freq=1,
+#     print_freq=1,
+#     test_only=True
+# )

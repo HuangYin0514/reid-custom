@@ -175,6 +175,7 @@ def evaluate_rank(
     max_rank=50,
     use_metric_cuhk03=False,
     use_cython=True
+    # use_cython=False
 ):
     """Evaluates CMC rank.
 

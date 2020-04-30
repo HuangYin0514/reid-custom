@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf ./logs*
+rm -rf ./log*
 
 mv /mnt/c/Users/10713/Downloads/logs.tar ./logs.tar
 
