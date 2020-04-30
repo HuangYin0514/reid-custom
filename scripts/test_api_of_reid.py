@@ -9,7 +9,7 @@ import torch
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 datamanager = torchreid.data.ImageDataManager(
-    root='reid-data',
+    root='../reid-data',
     sources='market1501',
     targets='market1501',
     height=256,
@@ -19,8 +19,12 @@ datamanager = torchreid.data.ImageDataManager(
     transforms=['random_flip', 'random_crop']
 )
 
+
+
+# %%
+
 model = torchreid.models.build_model(
-    name='resnet50',
+    name='mylinearnnet_baisc',
     num_classes=datamanager.num_train_pids,
     loss='softmax',
     pretrained=True
@@ -28,31 +32,18 @@ model = torchreid.models.build_model(
 
 model = model.to(device)
 
-optimizer = torchreid.optim.build_optimizer(
-    model,
-    optim='adam',
-    lr=0.0003
+# %%
+model1 = torchreid.models.build_model(
+    name='resnet50',
+    num_classes=datamanager.num_train_pids,
+    loss='softmax',
+    pretrained=False
 )
 
-scheduler = torchreid.optim.build_lr_scheduler(
-    optimizer,
-    lr_scheduler='single_step',
-    stepsize=20
-)
+model1 = model1.to(device)
 
-engine = torchreid.engine.ImageSoftmaxEngine(
-    datamanager,
-    model,
-    optimizer=optimizer,
-    scheduler=scheduler,
-    label_smooth=True
-)
+# %%
+input = torch.randn(4,3,256,128)
+model1(input).shape
 
-# engine.run(
-#     save_dir='log/resnet50',
-#     max_epoch=1,
-#     eval_freq=1,
-#     print_freq=1,
-#     test_only=True
-# )
 # %%
