@@ -1,4 +1,4 @@
-#！ python
+# ！ python
 
 import torchreid
 import torch
@@ -14,7 +14,7 @@ class Load_trained_parameters():
     Load_trained_parameters(load_path).load_trained_model_weights(model)
     """
 
-    def __init__(self, load_path_url):
+    def __init__(self, load_path_url, device):
         self.__checkpoint_states = {
             'state_dict': None,
             'optimizer': None,
@@ -23,14 +23,16 @@ class Load_trained_parameters():
             'rank1': None
         }
         self.load_path_url = load_path_url
+        self.device = device
         self.load_saved_path(self.load_path_url)
+
 
     def load_saved_path(self, load_path_url):
         """load paramters with path.
 
         from load_path (str)
         """
-        checkpoint = torch.load(load_path_url)
+        checkpoint = torch.load(load_path_url, map_location=self.device)
         for _ in checkpoint:
             if _ in checkpoint.keys() and self.__checkpoint_states:
                 self.__checkpoint_states[_] = checkpoint[_]
