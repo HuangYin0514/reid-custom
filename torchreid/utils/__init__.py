@@ -7,3 +7,4 @@ from .avgmeter import *
 from .reidtools import *
 from .torchtools import *
 from .model_complexity import compute_model_complexity
+from .Load_trained_model_parameters import *

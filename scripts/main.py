@@ -1,5 +1,3 @@
-
-
 import torchreid
 import torch
 
@@ -11,7 +9,7 @@ datamanager = torchreid.data.ImageDataManager(
     targets='market1501',
     height=256,
     width=128,
-    batch_size_train=32,
+    batch_size_train=4,
     batch_size_test=16,
     transforms=['random_flip', 'random_crop']
 )
@@ -22,6 +20,9 @@ model = torchreid.models.build_model(
     loss='softmax',
     pretrained=True
 )
+
+load_path = '/home/hy/vscode/reid-custom/log/pcb_p4/model/model.pth.tar-8'
+torchreid.utils.Load_trained_parameters(load_path).load_trained_model_weights(model)
 
 model = model.to(device)
 
@@ -50,5 +51,5 @@ engine.run(
     max_epoch=1,
     eval_freq=1,
     print_freq=1,
-    test_only=True
+    # test_only=True
 )

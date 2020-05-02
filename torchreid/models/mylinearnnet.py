@@ -25,6 +25,8 @@ class mylinearnnet(nn.Module):
         out = self.layer1(x)
         out = self.layer2(out)
         out = out.reshape(out.size(0), -1)
+        if not self.training:
+            return out
         out = self.fc(out)
         return out
 
@@ -41,5 +43,12 @@ if __name__ == "__main__":
     net = mylinearnnet_baisc(num_classes=9)
     print(net)
     import torch
+    net.train()
+    input = torch.randn(4, 3, 256, 128)
+    print(net(input).shape)
+
+    print('*'*100)
+
+    net.eval()
     input = torch.randn(4, 3, 256, 128)
     print(net(input).shape)
