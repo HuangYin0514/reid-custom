@@ -81,8 +81,8 @@ class PCBModel(nn.Module):
                 features_H.append(stripe_features_H)
 
         # Return the features_H
-        if self.return_features:
-            return torch.stack(features_H, dim=2)
+        if not self.training:
+            return torch.stack(features_H, dim=2).view(x.size(0), -1)
 
         # [N, C=num_classes]
         batch_size = x.size(0)
@@ -91,8 +91,6 @@ class PCBModel(nn.Module):
 
         return logits_list
 
-    def set_return_features(self, option):
-        self.return_features = option
 
 
 ##########
