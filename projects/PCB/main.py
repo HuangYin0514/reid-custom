@@ -14,8 +14,10 @@ from torchreid.utils import (
 
 from default_config import (
     imagedata_kwargs, optimizer_kwargs, engine_run_kwargs, get_default_config,
-    lr_scheduler_kwargs
+    lr_scheduler_kwargs, model_kwargs
 )
+import pcbnet as pcb_model
+from sofmax_engine import ImageSoftmaxEngine
 
 
 def reset_config(cfg, args):
@@ -84,12 +86,46 @@ def main():
     log_name += time.strftime('-%Y-%m-%d-%H-%M-%S')
     sys.stdout = Logger(osp.join(cfg.data.save_dir, log_name))
 
-    print('Show configuration\n{}\n'.format(cfg))
-    print('Collecting env info ...')
-    print('** System info **\n{}\n'.format(collect_env_info()))
+    # print('Show configuration\n{}\n'.format(cfg))
+    # print('Collecting env info ...')
+    # print('** System info **\n{}\n'.format(collect_env_info()))
 
     if cfg.use_gpu:
         torch.backends.cudnn.benchmark = True
+
+    datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(cfg))
+
+    print('Building model: {}'.format(cfg.model.name))
+    model = pcb_model.build_model(
+        cfg.model.name, num_classes=datamanager.num_train_pids, **model_kwargs(cfg)
+    )
+
+    num_params, flops = compute_model_complexity(
+        model, (1, 3, cfg.data.height, cfg.data.width)
+    )
+
+    print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
+
+    optimizer = torchreid.optim.build_optimizer(model, **optimizer_kwargs(cfg))
+    scheduler = torchreid.optim.build_lr_scheduler(
+        optimizer, **lr_scheduler_kwargs(cfg)
+    )
+
+    if cfg.model.resume and check_isfile(cfg.model.resume):
+        cfg.train.start_epoch = resume_from_checkpoint(
+            cfg.model.resume, model, optimizer=optimizer
+        )
+
+    print('Building PCB engine')
+    engine = ImageSoftmaxEngine(
+        datamanager,
+        model,
+        optimizer,
+        scheduler=scheduler,
+        use_gpu=cfg.use_gpu,
+        label_smooth=cfg.loss.softmax.label_smooth,
+    )
+    engine.run(**engine_run_kwargs(cfg))
 
 
 if __name__ == '__main__':

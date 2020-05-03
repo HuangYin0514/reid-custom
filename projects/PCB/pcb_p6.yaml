@@ -1,14 +1,10 @@
 model:
-  name: 'pcb_p6'
+  name: 'PCB_p6'
   pretrained: False
-
-nas:
-  mc_iter: 1
-  init_lmda: 10.
-  min_lmda: 1.
-  lmda_decay_step: 20
-  lmda_decay_rate: 0.5
-  fixed_lmda: False
+  # resume: '/home/hy/vscode/reid-custom/log/tensorboard/log/resnet50/model/model.pth.tar-60'
+  num_stripes: 6
+  share_conv: False
+  return_features: False
 
 data:
   type: 'image'
@@ -17,8 +13,8 @@ data:
   height: 384
   width: 128
   combineall: True
-  transforms: ['random_flip', 'color_jitter']
-  save_dir: 'log/pcb_nas'
+  transforms: ['random_flip']
+  save_dir: 'log/pcb_p6_save'
 
 loss:
   name: 'softmax'
@@ -28,7 +24,7 @@ loss:
 train:
   optim: 'sgd'
   lr: 0.1
-  max_epoch: 60
+  max_epoch: 5
   batch_size: 4
   fixbase_epoch: 0
   open_layers: ['classifier']

@@ -10,7 +10,7 @@ from torchreid.engine import Engine
 from torchreid.losses import CrossEntropyLoss
 
 
-class ImageSoftmaxNASEngine(Engine):
+class ImageSoftmaxEngine(Engine):
 
     def __init__(
         self,
@@ -21,19 +21,10 @@ class ImageSoftmaxNASEngine(Engine):
         use_gpu=False,
         label_smooth=True,
         mc_iter=1,
-        init_lmda=1.,
-        min_lmda=1.,
-        lmda_decay_step=20,
-        lmda_decay_rate=0.5,
-        fixed_lmda=False
     ):
-        super(ImageSoftmaxNASEngine, self).__init__(datamanager, use_gpu)
+        super(ImageSoftmaxEngine, self).__init__(datamanager, use_gpu)
         self.mc_iter = mc_iter
-        self.init_lmda = init_lmda
-        self.min_lmda = min_lmda
-        self.lmda_decay_step = lmda_decay_step
-        self.lmda_decay_rate = lmda_decay_rate
-        self.fixed_lmda = fixed_lmda
+
 
         self.model = model
         self.optimizer = optimizer
@@ -52,19 +43,10 @@ class ImageSoftmaxNASEngine(Engine):
         if self.use_gpu:
             imgs = imgs.cuda()
             pids = pids.cuda()
-
-        # softmax temporature
-        if self.fixed_lmda or self.lmda_decay_step == -1:
-            lmda = self.init_lmda
-        else:
-            lmda = self.init_lmda * self.lmda_decay_rate**(
-                self.epoch // self.lmda_decay_step
-            )
-            if lmda < self.min_lmda:
-                lmda = self.min_lmda
+        
 
         for k in range(self.mc_iter):
-            outputs = self.model(imgs, lmda=lmda)
+            outputs = self.model(imgs)
             loss = self._compute_loss(self.criterion, outputs, pids)
             self.optimizer.zero_grad()
             loss.backward()
