@@ -33,6 +33,7 @@ train:
   lr_scheduler: 'single_step'
   stepsize: [20]
   gamma: 0.1
+  open_layers: []
 
 sgd:
   nesterov: True
