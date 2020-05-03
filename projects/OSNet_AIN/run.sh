@@ -1,1 +1,0 @@
-python main.py --config-file nas.yaml --root /home/hy/vscode/reid-custom/reid-data

@@ -31,7 +31,7 @@ train:
   batch_size: 64
   fixbase_epoch: 0
   lr_scheduler: 'single_step'
-  stepsize: 20
+  stepsize: [20]
   gamma: 0.1
 
 sgd:
