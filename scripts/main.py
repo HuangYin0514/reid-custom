@@ -5,8 +5,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 state_dict = {
-    'name': 'resnet50',
-    'is_pretrained': True,
+    'name': 'pcb_p6',
+    'is_pretrained': False,
     'load_path_url': '/home/hy/vscode/reid-custom/log/tensorboard/log/resnet50/model/model.pth.tar-60',
     'batch_size_train': 4,
     'batch_size_test': 16,
@@ -74,5 +74,6 @@ engine.run(
     max_epoch=state_dict['max_epoch'],
     eval_freq=state_dict['eval_freq'],
     print_freq=state_dict['print_freq'],
-    # test_only=True
+    # test_only=True,
+    # visrank=True,
 )
