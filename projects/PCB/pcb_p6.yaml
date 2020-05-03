@@ -1,5 +1,5 @@
 model:
-  name: 'osnet_nas'
+  name: 'pcb_p6'
   pretrained: False
 
 nas:
@@ -14,11 +14,11 @@ data:
   type: 'image'
   sources: ['market1501']
   targets: ['market1501']
-  height: 256
+  height: 384
   width: 128
   combineall: True
   transforms: ['random_flip', 'color_jitter']
-  save_dir: 'log/osnet_nas'
+  save_dir: 'log/pcb_nas'
 
 loss:
   name: 'softmax'
@@ -28,14 +28,14 @@ loss:
 train:
   optim: 'sgd'
   lr: 0.1
-  max_epoch: 120
-  batch_size: 512
+  max_epoch: 60
+  batch_size: 4
   fixbase_epoch: 0
   open_layers: ['classifier']
   lr_scheduler: 'cosine'
 
 test:
-  batch_size: 300
+  batch_size: 4
   dist_metric: 'cosine'
   normalize_feature: False
   evaluate: False

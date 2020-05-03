@@ -17,6 +17,28 @@
             "request": "launch",
             "program": "scripts/main.py",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "project osnet",
+            "type": "python",
+            "request": "launch",
+            "program": "projects/OSNet_AIN/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--config-file=projects/OSNet_AIN/nas.yaml",
+                // "--root=/home/hy/vscode/reid-custom/reid-data",
+            ]
+        },
+        {
+            "name": "project pcb_p6",
+            "type": "python",
+            "request": "launch",
+            "program": "projects/OSNet_AIN/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--config-file=projects/OSNet_AIN/pcb_p6.yaml",
+                // "--root=/home/hy/vscode/reid-custom/reid-data",
+            ]
         }
     ]
 }
