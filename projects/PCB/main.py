@@ -103,9 +103,11 @@ def main():
     num_params, flops = compute_model_complexity(
         model, (1, 3, cfg.data.height, cfg.data.width)
     )
-
     print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
 
+    if cfg.use_gpu:
+        model = nn.DataParallel(model).cuda()
+        
     optimizer = torchreid.optim.build_optimizer(model, **optimizer_kwargs(cfg))
     scheduler = torchreid.optim.build_lr_scheduler(
         optimizer, **lr_scheduler_kwargs(cfg)
