@@ -17,7 +17,8 @@ data:
 
 test:
   batch_size: 512
-  dist_metric: 'euclidean'
+  # dist_metric: 'euclidean'
+  dist_metric: cosine
   normalize_feature: False
   evaluate: True
   eval_freq: -1
