@@ -23,7 +23,7 @@ loss:
 
 train:
   optim: 'sgd'
-  lr: 0.1
+  lr: 1.0
   new_layers: ['local_conv_list','fc_list']
   staged_lr: True
   base_lr_mult: 0.1
