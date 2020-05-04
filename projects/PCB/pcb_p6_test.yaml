@@ -19,7 +19,7 @@ test:
   batch_size: 512
   # dist_metric: 'euclidean'
   dist_metric: cosine
-  normalize_feature: False
+  normalize_feature: True
   evaluate: True
   eval_freq: -1
   rerank: False
