@@ -1,9 +1,11 @@
 #!/bin/bash
 
-rm -rf ./log*
+rm -rf /home/hy/vscode/reid-custom/log/tensorboard/log*
 
-mv /mnt/c/Users/10713/Downloads/logs.tar ./logs.tar
+mv /mnt/c/Users/10713/Downloads/logs.tar /home/hy/vscode/reid-custom/log/tensorboard/logs.tar
 
-tar zxf logs.tar
+tar zxf /home/hy/vscode/reid-custom/log/tensorboard/logs.tar
 
-tensorboard --logdir=./
+tensorboard --logdir=/home/hy/vscode/reid-custom/log/
+
+

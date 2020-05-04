@@ -14,7 +14,7 @@ class Load_trained_parameters():
     """
 
     def __init__(self, load_path_url=None, device=None, model=None, is_pretrained=False):
-        self.__checkpoint_states = {
+        self.checkpoint_states = {
             'state_dict': None,
             'optimizer': None,
             'scheduler': None,
@@ -48,11 +48,11 @@ class Load_trained_parameters():
         checkpoint = torch.load(load_path_url, map_location=self.device)
         load_state = []
         for _ in checkpoint:
-            if _ in checkpoint.keys() and self.__checkpoint_states:
-                self.__checkpoint_states[_] = checkpoint[_]
+            if _ in checkpoint.keys() and self.checkpoint_states:
+                self.checkpoint_states[_] = checkpoint[_]
                 load_state.append(_)
-        rank1 = self.__checkpoint_states['rank1']
-        epoch = self.__checkpoint_states['epoch']
+        rank1 = self.checkpoint_states['rank1']
+        epoch = self.checkpoint_states['epoch']
         print(f'load state {load_state} of rank1 is {rank1} and epoch is {epoch}')
 
     def load_trained_model_weights(self, model):
@@ -62,9 +62,9 @@ class Load_trained_parameters():
         """
         model_dict = model.state_dict()
         pretrain_dict = {
-            k: v
-            for k, v in self.__checkpoint_states['state_dict'].items()
-            if k in model_dict and model_dict[k].size() == v.size()
+            k[7:]: v
+            for k, v in self.checkpoint_states['state_dict'].items()
+            if k[7:] in model_dict and model_dict[k[7:]].size() == v.size()
         }
         model_dict.update(pretrain_dict)
         model.load_state_dict(model_dict)
@@ -72,9 +72,9 @@ class Load_trained_parameters():
         
         # unload module
         unload_dict = {
-            k: v
-            for k, v in self.__checkpoint_states['state_dict'].items()
-            if not (k in model_dict and model_dict[k].size() == v.size())
+            k[7:]: v
+            for k, v in self.checkpoint_states['state_dict'].items()
+            if not (k[7:] in model_dict and model_dict[k[7:]].size() == v.size())
         }
 
         self.print_unload_module(unload_dict)

@@ -1,5 +1,24 @@
-import torchreid
+import os
+import sys
+import time
+import os.path as osp
+import argparse
 import torch
+import torch.nn as nn
+
+import torchreid
+from torchreid.utils import (
+    Logger, check_isfile, set_random_seed, collect_env_info,
+    resume_from_checkpoint, compute_model_complexity
+)
+
+from default_config import (
+    imagedata_kwargs, optimizer_kwargs, engine_run_kwargs, get_default_config,
+    lr_scheduler_kwargs, model_kwargs
+)
+import pcbnet as pcb_model
+from sofmax_engine import ImageSoftmaxEngine
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -29,13 +48,19 @@ datamanager = torchreid.data.ImageDataManager(
     transforms=['random_flip', 'random_crop']
 )
 
-model = torchreid.models.build_model(
-    name=state_dict['name'],
-    num_classes=datamanager.num_train_pids,
-    loss='softmax',
-    pretrained=True
+# model = torchreid.models.build_model(
+#     name=state_dict['name'],
+#     num_classes=datamanager.num_train_pids,
+#     loss='softmax',
+#     pretrained=True
+# )
+print('Building model: {}'.format('PCB_p6'))
+model = pcb_model.build_model(
+    'PCB_p6', num_classes=datamanager.num_train_pids,
+    num_stripes=6,
+    share_conv=False,
+    return_features=True
 )
-
 
 torchreid.utils.Load_trained_parameters(
     is_pretrained=state_dict['is_pretrained'],
@@ -48,7 +73,7 @@ torchreid.utils.Load_trained_parameters(
 model = model.to(device)
 
 num_params, flops = torchreid.utils.compute_model_complexity(
-    model, (1, 3,384, 128)
+    model, (1, 3, 384, 128)
 )
 print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
 
