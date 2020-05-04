@@ -69,6 +69,12 @@ def main():
         nargs=argparse.REMAINDER,
         help='Modify config options using the command-line'
     )
+    parser.add_argument(
+        '--model-resume',
+        type=str,
+        default=None,
+        help='resume trained model'
+    )
     args = parser.parse_args()
 
     cfg = get_default_config()
@@ -106,17 +112,26 @@ def main():
     print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
 
     if cfg.use_gpu:
-        model = nn.DataParallel(model).cuda()
-        
+        # model = nn.DataParallel(model).cuda()
+        model = model.cuda()
+
+    print(args.model_resume)
+    if not args.model_resume is None:
+        torchreid.utils.Load_trained_parameters(
+            is_pretrained=True,
+            model=model,
+            load_path_url=args.model_resume,
+            device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        )
     optimizer = torchreid.optim.build_optimizer(model, **optimizer_kwargs(cfg))
     scheduler = torchreid.optim.build_lr_scheduler(
         optimizer, **lr_scheduler_kwargs(cfg)
     )
 
-    if cfg.model.resume and check_isfile(cfg.model.resume):
-        cfg.train.start_epoch = resume_from_checkpoint(
-            cfg.model.resume, model, optimizer=optimizer
-        )
+    # if cfg.model.resume and check_isfile(cfg.model.resume):
+    #     cfg.train.start_epoch = resume_from_checkpoint(
+    #         cfg.model.resume, model, optimizer=optimizer
+    #     )
 
     print('Building PCB engine')
     engine = ImageSoftmaxEngine(

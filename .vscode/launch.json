@@ -11,13 +11,13 @@
             "program": "${file}",
             "console": "integratedTerminal"
         },
-        {
-            "name": "reid main",
-            "type": "python",
-            "request": "launch",
-            "program": "scripts/main.py",
-            "console": "integratedTerminal"
-        },
+        // {
+        //     "name": "reid main",
+        //     "type": "python",
+        //     "request": "launch",
+        //     "program": "scripts/main.py",
+        //     "console": "integratedTerminal"
+        // },
         {
             "name": "pcb_p6",
             "type": "python",
@@ -28,16 +28,15 @@
                 "--config-file=projects/PCB/pcb_p6.yaml",
                 "--root=/home/hy/vscode/reid-custom/reid-data",
             ]
-        }
-        ,
+        },
         {
-            "name": "t_map",
+            "name": "test_map_pcb",
             "type": "python",
             "request": "launch",
-            "program": "projects/PCB/t_map.py",
+            "program": "projects/PCB/main.py",
             "console": "integratedTerminal",
             "args": [
-               
+                "--config-file=projects/PCB/pcb_p6_test.yaml",
             ]
         }
     ]

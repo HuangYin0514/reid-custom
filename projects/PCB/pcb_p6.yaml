@@ -1,7 +1,6 @@
 model:
   name: 'PCB_p6'
   pretrained: False
-  # resume: '/home/hy/vscode/reid-custom/log/tensorboard/log/resnet50/model/model.pth.tar-60'
   num_stripes: 6
   share_conv: False
   return_features: False
@@ -14,7 +13,7 @@ data:
   width: 128
   combineall: False
   transforms: ['random_flip']
-  save_dir: 'log/pcb_p6_save'
+  save_dir: 'log/pcb_p6'
 
 loss:
   name: 'softmax'
