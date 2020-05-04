@@ -29,5 +29,16 @@
                 "--root=/home/hy/vscode/reid-custom/reid-data",
             ]
         }
+        ,
+        {
+            "name": "t_map",
+            "type": "python",
+            "request": "launch",
+            "program": "projects/PCB/t_map.py",
+            "console": "integratedTerminal",
+            "args": [
+               
+            ]
+        }
     ]
 }

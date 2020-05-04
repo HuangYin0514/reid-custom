@@ -48,12 +48,6 @@ datamanager = torchreid.data.ImageDataManager(
     transforms=['random_flip', 'random_crop']
 )
 
-# model = torchreid.models.build_model(
-#     name=state_dict['name'],
-#     num_classes=datamanager.num_train_pids,
-#     loss='softmax',
-#     pretrained=True
-# )
 print('Building model: {}'.format('PCB_p6'))
 model = pcb_model.build_model(
     'PCB_p6', num_classes=datamanager.num_train_pids,
@@ -105,5 +99,5 @@ engine.run(
     eval_freq=state_dict['eval_freq'],
     print_freq=state_dict['print_freq'],
     test_only=True,
-    # visrank=True,
+    visrank=True,
 )

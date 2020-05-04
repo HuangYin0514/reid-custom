@@ -12,7 +12,7 @@ data:
   targets: ['market1501']
   height: 384
   width: 128
-  combineall: True
+  combineall: False
   transforms: ['random_flip']
   save_dir: 'log/pcb_p6_save'
 
