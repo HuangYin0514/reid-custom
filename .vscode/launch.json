@@ -1,43 +1,25 @@
 {
-    // 使用 IntelliSense 了解相关属性。 
-    // 悬停以查看现有属性的描述。
-    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "当前文件",
+            "name": "Python: Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
         },
-        // {
-        //     "name": "reid main",
-        //     "type": "python",
-        //     "request": "launch",
-        //     "program": "scripts/main.py",
-        //     "console": "integratedTerminal"
-        // },
         {
-            "name": "pcb_p6",
+            "name": "train.py",
             "type": "python",
             "request": "launch",
-            "program": "projects/PCB/main.py",
+            "program": "train.py",
             "console": "integratedTerminal",
             "args": [
-                "--config-file=projects/PCB/pcb_p6.yaml",
-                "--root=/home/hy/vscode/reid-custom/reid-data",
+                "--experiment=Resnet_self_attention",
             ]
         },
-        {
-            "name": "test_map_pcb",
-            "type": "python",
-            "request": "launch",
-            "program": "projects/PCB/main.py",
-            "console": "integratedTerminal",
-            "args": [
-                "--config-file=projects/PCB/pcb_p6_test.yaml",
-            ]
-        }
     ]
 }
