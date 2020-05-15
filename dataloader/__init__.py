@@ -2,9 +2,11 @@ import os
 import torch
 from torchvision import datasets, transforms
 from occluded_reid import Occluded_REID
+from market1501 import Market1501
 
 __dataset_factory = {
-    'Occluded_REID': Occluded_REID
+    'Occluded_REID': Occluded_REID,
+    'Market1501':Market1501
 }
 
 
@@ -60,8 +62,9 @@ def check_data(images, fids, img_save_path):
 
 
 if __name__ == "__main__":
-    Occluded_REID_dataloader = getDataLoader('Occluded_REID', 4, dataset_path='/home/hy/vscode/reid-custom/data/Occluded_REID/', part='query')
-    print(Occluded_REID_dataloader)
-    t_data = next(iter(Occluded_REID_dataloader))
+    dataloader = getDataLoader('Occluded_REID', 4, dataset_path='/home/hy/vscode/reid-custom/data/Occluded_REID/', part='query')
+    # dataloader = getDataLoader('Market1501', 4, dataset_path='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15', part='query')
+    print(dataloader)
+    t_data = next(iter(dataloader))
     print(t_data)
     check_data(t_data[0], t_data[1], './dataloader/checkdata.jpg')

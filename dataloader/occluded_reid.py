@@ -1,15 +1,7 @@
-import sys
-import os
 import os.path as osp
 import glob
-import re
-import warnings
-
-import cv2
-import numpy as np
 
 from torch.utils.data import Dataset
-from torchvision import datasets
 from data_tools import read_image
 
 
@@ -63,29 +55,7 @@ class Occluded_REID(Dataset):
 
         if self.transform is not None:
             img = self.transform(img)
-        return img, pid, camid, img_path
+        return img, pid, camid
 
     def __len__(self):
         return len(self.data)
-
-
-if __name__ == "__main__":
-    from torchvision import datasets, transforms
-
-    transform_list = [
-        transforms.Resize(size=(384, 128), interpolation=3),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]
-    if 1:
-        transform_list.insert(1, transforms.RandomHorizontalFlip())
-    data_transform = transforms.Compose(transform_list)
-    image_dataset = Occluded_REID(
-        root='/home/hy/vscode/reid-custom/data/Occluded_REID/', part='query', transform=data_transform)
-    import torch
-
-    dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=4,
-                                             shuffle=True, num_workers=4)
-    print(len(image_dataset))
-    # print(image_dataset[0][0])
-    print(dataloader)
