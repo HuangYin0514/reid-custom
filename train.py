@@ -41,9 +41,7 @@ torch.cuda.manual_seed_all(1)
 save_dir_path = os.path.join(args.save_path, args.dataset)
 os.makedirs(save_dir_path, exist_ok=True)
 
-
-# ---------------------- Train function ----------------------
-# Schedule learning rate
+# Schedule learning rate--------------------------------------------
 def adjust_lr(epoch):
     step_size = 40
     lr = args.learning_rate * (0.1 ** (epoch // step_size))
@@ -51,6 +49,7 @@ def adjust_lr(epoch):
         g['lr'] = lr * g.get('lr_mult', 1)
 
 
+# ---------------------- Train function ----------------------
 def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device):
     '''
         train
