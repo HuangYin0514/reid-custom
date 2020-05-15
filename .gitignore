@@ -1,8 +1,4 @@
 *.pt
-**/__pycache__
 **.pyc
-**/log
-**/Market-1501-v15.09.15/
 **/experiments/
-**/other/
-**/datasets/
+**/data/
