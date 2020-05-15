@@ -13,24 +13,10 @@ from utils import util
 from dataloader import getDataLoader
 from models import build_model
 from metrics.distance import compute_distance_matrix
+from metrics.rank import evaluate_rank
+
+
 # ---------------------- Extract features ----------------------
-
-
-def get_cam_label(img_path):
-    camera_ids = []
-    labels = []
-    for path, _ in img_path:
-        filename = path.split('/')[-1]
-        label = filename[0:4]
-        camera = filename.split('c')[1]
-        if label[0:2] == '-1':
-            labels.append(-1)
-        else:
-            labels.append(int(label))
-        camera_ids.append(int(camera[0]))
-    return np.array(camera_ids), np.array(labels)
-
-
 def extract_feature(model, inputs, requires_norm, vectorize, requires_grad=False):
 
     # Move to model's device
@@ -58,84 +44,6 @@ def extract_feature(model, inputs, requires_norm, vectorize, requires_grad=False
     return features
 
 
-# ---------------------- Evaluation ----------------------
-def evaluate(query_features, query_labels, query_cams, gallery_features, gallery_labels, gallery_cams):
-    """Evaluate the CMC and mAP
-
-    Arguments:
-        query_features {np.ndarray of size NxC} -- Features of probe images
-        query_labels {np.ndarray of query size N} -- Labels of probe images
-        query_cams {np.ndarray of query size N} -- Cameras of probe images
-        gallery_features {np.ndarray of size N'xC} -- Features of gallery images
-        gallery_labels {np.ndarray of gallery size N'} -- Lables of gallery images
-        gallery_cams {np.ndarray of gallery size N'} -- Cameras of gallery images
-
-    Returns:
-        (torch.IntTensor, float) -- CMC list, mAP
-    """
-
-    CMC = torch.IntTensor(len(gallery_labels)).zero_()
-    AP = 0
-    sorted_index_list, sorted_y_true_list, junk_index_list = [], [], []
-
-    for i in range(len(query_labels)):
-        query_feature = query_features[i]
-        query_label = query_labels[i]
-        query_cam = query_cams[i]
-
-        # Prediction score
-        score = np.dot(gallery_features, query_feature)
-
-        match_query_index = np.argwhere(gallery_labels == query_label)
-        same_camera_index = np.argwhere(gallery_cams == query_cam)
-
-        # Positive index is the matched indexs at different camera i.e. the desired result
-        positive_index = np.setdiff1d(
-            match_query_index, same_camera_index, assume_unique=True)
-
-        # Junk index is the indexs at the same camera or the unlabeled image
-        junk_index = np.append(
-            np.argwhere(gallery_labels == -1),
-            np.intersect1d(match_query_index, same_camera_index))  # .flatten()
-
-        index = np.arange(len(gallery_labels))
-        # Remove all the junk indexs
-        sufficient_index = np.setdiff1d(index, junk_index)
-
-        # compute AP
-        y_true = np.in1d(sufficient_index, positive_index)
-        y_score = score[sufficient_index]
-        if not np.any(y_true):
-            # this condition is true when query identity does not appear in gallery
-            continue
-        AP += average_precision_score(y_true, y_score)
-
-        # Compute CMC
-        # Sort the sufficient index by their scores, from large to small
-        sorted_index = np.argsort(y_score)[::-1]
-        sorted_y_true = y_true[sorted_index]
-        match_index = np.argwhere(sorted_y_true == True)
-
-        if match_index.size > 0:
-            first_match_index = match_index.flatten()[0]
-            CMC[first_match_index:] += 1
-
-        # keep with junk index, for using the index to show the img from dataloader
-        all_sorted_index = np.argsort(score)[::-1]
-        all_y_true = np.in1d(index, match_query_index)
-        all_sorted_y_true = all_y_true[all_sorted_index]
-
-        sorted_index_list.append(all_sorted_index)
-        sorted_y_true_list.append(all_sorted_y_true)
-        junk_index_list.append(junk_index)
-
-    CMC = CMC.float()
-    CMC = CMC / len(query_labels) * 100  # average CMC
-    mAP = AP / len(query_labels) * 100
-
-    return CMC, mAP, (sorted_index_list, sorted_y_true_list, junk_index_list)
-
-
 # ---------------------- Start testing ----------------------
 def test(model, dataset, dataset_path, batch_size, max_rank=100):
     model.eval()
@@ -146,8 +54,8 @@ def test(model, dataset, dataset_path, batch_size, max_rank=100):
         dataset, batch_size, dataset_path, 'query', shuffle=False, augment=False)
 
     # image information------------------------------------------------------------
-    gallery_cams, gallery_labels = [], []
-    query_cams, query_labels = [], []
+    gallery_cams, gallery_pids = [], []
+    query_cams, query_pids = [], []
     gallery_features = []
     query_features = []
 
@@ -155,23 +63,37 @@ def test(model, dataset, dataset_path, batch_size, max_rank=100):
     for inputs, pids, camids in gallery_dataloader:
         gallery_features.append(extract_feature(
             model, inputs, requires_norm=True, vectorize=True).cpu().data)
-        query_labels.extend(np.array(pids))
-        query_cams.extend(np.array(camids))
+        gallery_pids.extend(np.array(pids))
+        gallery_cams.extend(np.array(camids))
     gallery_features = torch.cat(gallery_features, dim=0)
+    gallery_pids = np.asarray(gallery_pids)
+    gallery_cams = np.asarray(gallery_cams)
 
     # query_dataloader ------------------------------------------------------------
     for inputs, pids, camids in query_dataloader:
         query_features.append(extract_feature(
             model, inputs, requires_norm=True, vectorize=True).cpu().data)
-        gallery_labels.extend(np.array(pids))
-        gallery_cams.extend(np.array(camids))
+        query_pids.extend(np.array(pids))
+        query_cams.extend(np.array(camids))
     query_features = torch.cat(query_features, dim=0)
+    query_pids = np.asarray(query_pids)
+    query_cams = np.asarray(query_cams)
 
     # compute cmc and map ------------------------------------------------------------
     distmat = compute_distance_matrix(
         query_features, gallery_features, metric='cosine')
+    distmat = distmat.numpy()
 
-    return CMC, mAP
+    print('Computing CMC and mAP ...')
+    cmc, mAP = evaluate_rank(
+        distmat,
+        query_pids,
+        gallery_pids,
+        query_cams,
+        gallery_cams,
+    )
+
+    return cmc, mAP
 
 
 if __name__ == "__main__":
@@ -214,4 +136,4 @@ if __name__ == "__main__":
     logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' %
                 (CMC[0], CMC[4], CMC[9], mAP))
 
-    torch.cuda.empty_cache()
+    # torch.cuda.empty_cache()

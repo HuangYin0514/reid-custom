@@ -3,13 +3,11 @@ import warnings
 from collections import defaultdict
 
 
-
 def eval_market1501(distmat, q_pids, g_pids, q_camids, g_camids, max_rank):
     """Evaluation with market1501 metric
     Key: for each query identity, its gallery images from the same camera view are discarded.
     """
     num_q, num_g = distmat.shape
-
 
     indices = np.argsort(distmat, axis=1)
     matches = (g_pids[indices] == q_pids[:, np.newaxis]).astype(np.int32)
@@ -17,7 +15,7 @@ def eval_market1501(distmat, q_pids, g_pids, q_camids, g_camids, max_rank):
     # compute cmc curve for each query
     all_cmc = []
     all_AP = []
-    num_valid_q = 0. # number of valid query
+    num_valid_q = 0.  # number of valid query
 
     for q_idx in range(num_q):
         # get query pid and camid
@@ -31,7 +29,7 @@ def eval_market1501(distmat, q_pids, g_pids, q_camids, g_camids, max_rank):
 
         # compute cmc curve
         raw_cmc = matches[q_idx][
-            keep] # binary vector, positions with value 1 are correct matches
+            keep]  # binary vector, positions with value 1 are correct matches
         if not np.any(raw_cmc):
             # this condition is true when query identity does not appear in gallery
             continue
@@ -81,7 +79,7 @@ def evaluate_rank(
     g_camids,
     max_rank=50,
     use_metric_cuhk03=False,
-    use_cython=True
+    use_cython=False
 ):
     """Evaluates CMC rank.
 
