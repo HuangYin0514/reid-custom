@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 
-from data.dataloader import getDataLoader
+from dataloader import getDataLoader
 from models import *
 from utils import util
 from test import test
