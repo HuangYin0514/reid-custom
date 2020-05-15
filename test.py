@@ -9,9 +9,9 @@ from torch.autograd import Variable
 from torchvision import datasets, transforms
 from sklearn.metrics import average_precision_score
 
-import utils
+from utils import util
 from dataloader import getDataLoader
-from model import *
+from models import build_model
 # ---------------------- Extract features ----------------------
 
 
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     save_dir_path = os.path.join(args.save_path, args.dataset)
     os.makedirs(save_dir_path, exist_ok=True)
 
-    logger = utils.Logger(save_dir_path)
+    logger = util.Logger(save_dir_path)
     logger.info(vars(args))
 
     train_dataloader = getDataLoader(
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     model = build_model(args.experiment, num_classes=751,
                             share_conv=args.share_conv)
 
-    model = utils.load_network(model,
+    model = util.load_network(model,
                                save_dir_path, args.which_epoch)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
