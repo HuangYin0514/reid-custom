@@ -10,17 +10,16 @@ from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
 from utils import util
-from test import test
+from test_resnet import test
 
 
 # ---------------------- Settings ----------------------
 parser = argparse.ArgumentParser(description='Training arguments')
 parser.add_argument('--experiment', type=str, default='PCB_p6')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--dataset', type=str, default='market1501',
-                    choices=['market1501', 'cuhk03', 'duke'])
+parser.add_argument('--dataset', type=str, default='Market1501')
 parser.add_argument('--dataset_path', type=str,
-                    default='/home/hy/vscode/reid-custom/data/pytorch_market/')
+                    default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
 parser.add_argument('--batch_size', default=64,
                     type=int, help='batch_size')
 parser.add_argument('--learning_rate', default=0.1, type=float,

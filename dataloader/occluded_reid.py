@@ -2,7 +2,7 @@ import os.path as osp
 import glob
 
 from torch.utils.data import Dataset
-from data_tools import read_image
+from .data_tools import read_image
 
 
 class Occluded_REID(Dataset):

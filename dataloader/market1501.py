@@ -3,7 +3,7 @@ import glob
 import os.path as osp
 import warnings
 from torch.utils.data import Dataset
-from data_tools import read_image
+from .data_tools import read_image
 
 
 class Market1501(Dataset):
