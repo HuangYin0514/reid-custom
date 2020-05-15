@@ -1,9 +1,9 @@
 
 import torch
 
-from pcb import PCB_p6
-from resnet import Res_net
-from resnet_att import Resnet_self_attention
+from .pcb import PCB_p6
+from .resnet import Res_net
+from .resnet_att import Resnet_self_attention
 
 
 __model_factory = {
@@ -23,14 +23,14 @@ def build_model(name, num_classes, **kwargs):
 
 
 
-if __name__ == "__main__":
-    model = build_model('Resnet_self_attention', num_classes=6)
-    print(model)
-    # test input and ouput
-    input = torch.randn(4, 3, 384, 128)
-    print(model(input))
-    ## output is list
-    if isinstance(model(input), list):
-        print([k.shape for k in model(input)])
-    else:
-        print(model(input).shape)
+# if __name__ == "__main__":
+#     model = build_model('Resnet_self_attention', num_classes=6)
+#     print(model)
+#     # test input and ouput
+#     input = torch.randn(4, 3, 384, 128)
+#     print(model(input))
+#     ## output is list
+#     if isinstance(model(input), list):
+#         print([k.shape for k in model(input)])
+#     else:
+#         print(model(input).shape)

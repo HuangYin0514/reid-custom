@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torchvision import models
-from self_attn import Self_Attn
+from .self_attn import Self_Attn
 
 
 

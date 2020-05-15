@@ -8,7 +8,7 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 
 from dataloader import getDataLoader
-from models import *
+from models import build_model
 from utils import util
 from test import test
 
@@ -30,8 +30,6 @@ parser.add_argument('--epochs', default=60, type=int,
 parser.add_argument('--share_conv', default=False, action='store_true')
 parser.add_argument('--stripes', type=int, default=6)
 args = parser.parse_args()
-
-print(args)
 
 # Fix random seed
 torch.manual_seed(1)
@@ -61,6 +59,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     logger = util.Logger(save_dir_path)
     logger.info('-' * 10)
     logger.info(vars(args))
+    logger.info(model)
 
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
