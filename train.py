@@ -115,7 +115,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             logger.y_test['top1'].append(CMC[0])
             logger.y_test['mAP'].append(mAP)
             if epoch + 1 != num_epochs:
-                utils.save_network(model, save_dir_path, str(epoch + 1))
+                util.save_network(model, save_dir_path, str(epoch + 1))
         logger.info('-' * 10)
 
     # Save the loss curve
