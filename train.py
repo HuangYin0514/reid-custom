@@ -69,7 +69,8 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         # Training
         running_loss = 0.0
         batch_num = 0
-        for inputs, labels in dataloader:
+        for data in dataloader:
+            inputs, labels, _ = data
             batch_num += 1
 
             inputs = inputs.to(device)
@@ -96,7 +97,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
             running_loss += loss.item() * inputs.size(0)
 
-        epoch_loss = running_loss / len(dataloader.dataset.imgs)
+        epoch_loss = running_loss / len(dataloader.dataset)
         logger.info('Training Loss: {:.4f}'.format(epoch_loss))
 
         # Save result to logger
@@ -125,7 +126,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         time_elapsed // 60, time_elapsed % 60))
 
     # Save final model weights
-    utils.save_network(model, save_dir_path, 'final')
+    util.save_network(model, save_dir_path, 'final')
 
 
 if __name__ == "__main__":
@@ -133,7 +134,7 @@ if __name__ == "__main__":
     train_dataloader = getDataLoader(
         args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
 
-    model = build_model(args.experiment, num_classes=len(train_dataloader.dataset.classes),
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids,
                         share_conv=args.share_conv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

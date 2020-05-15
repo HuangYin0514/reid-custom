@@ -37,6 +37,8 @@ class Market1501(Dataset):
         if part == 'train':
             train = self.process_dir(self.train_dir, relabel=True)
             self.data = train
+            self.num_train_pids = self.get_num_pids(self.data)
+            self.num_train_cams = self.get_num_cams(self.data)
         if part == 'query':
             query = self.process_dir(self.query_dir, relabel=False)
             self.data = query
@@ -82,3 +84,25 @@ class Market1501(Dataset):
 
     def __len__(self):
         return len(self.data)
+
+    def parse_data(self, data):
+        """Parses data list and returns the number of person IDs
+        and the number of camera views.
+
+        Args:
+            data (list): contains tuples of (img_path(s), pid, camid)
+        """
+        pids = set()
+        cams = set()
+        for _, pid, camid in data:
+            pids.add(pid)
+            cams.add(camid)
+        return len(pids), len(cams)
+
+    def get_num_pids(self, data):
+        """Returns the number of training person identities."""
+        return self.parse_data(data)[0]
+
+    def get_num_cams(self, data):
+        """Returns the number of training cameras."""
+        return self.parse_data(data)[1]

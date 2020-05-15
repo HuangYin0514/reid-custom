@@ -12,6 +12,7 @@ from sklearn.metrics import average_precision_score
 from utils import util
 from dataloader import getDataLoader
 from models import build_model
+from metrics.distance import compute_distance_matrix
 # ---------------------- Extract features ----------------------
 
 
@@ -55,7 +56,6 @@ def extract_feature(model, inputs, requires_norm, vectorize, requires_grad=False
         features = features.view(size)
 
     return features
-
 
 
 # ---------------------- Evaluation ----------------------
@@ -139,32 +139,37 @@ def evaluate(query_features, query_labels, query_cams, gallery_features, gallery
 # ---------------------- Start testing ----------------------
 def test(model, dataset, dataset_path, batch_size, max_rank=100):
     model.eval()
-
+    # test dataloader------------------------------------------------------------
     gallery_dataloader = getDataLoader(
         dataset, batch_size, dataset_path, 'gallery', shuffle=False, augment=False)
     query_dataloader = getDataLoader(
         dataset, batch_size, dataset_path, 'query', shuffle=False, augment=False)
 
-    gallery_cams, gallery_labels = get_cam_label(
-        gallery_dataloader.dataset.imgs)
-    query_cams, query_labels = get_cam_label(query_dataloader.dataset.imgs)
-
-    # Extract feature
+    # image information------------------------------------------------------------
+    gallery_cams, gallery_labels = [], []
+    query_cams, query_labels = [], []
     gallery_features = []
     query_features = []
 
-    for inputs, _ in gallery_dataloader:
+    # gallery_dataloader ------------------------------------------------------------
+    for inputs, pids, camids in gallery_dataloader:
         gallery_features.append(extract_feature(
             model, inputs, requires_norm=True, vectorize=True).cpu().data)
+        query_labels.extend(np.array(pids))
+        query_cams.extend(np.array(camids))
     gallery_features = torch.cat(gallery_features, dim=0)
 
-    for inputs, _ in query_dataloader:
+    # query_dataloader ------------------------------------------------------------
+    for inputs, pids, camids in query_dataloader:
         query_features.append(extract_feature(
             model, inputs, requires_norm=True, vectorize=True).cpu().data)
+        gallery_labels.extend(np.array(pids))
+        gallery_cams.extend(np.array(camids))
     query_features = torch.cat(query_features, dim=0)
 
-    CMC, mAP, (sorted_index_list, sorted_y_true_list, junk_index_list) = evaluate(
-        query_features, query_labels, query_cams, gallery_features, gallery_labels, gallery_cams)
+    # compute cmc and map ------------------------------------------------------------
+    distmat = compute_distance_matrix(
+        query_features, gallery_features, metric='cosine')
 
     return CMC, mAP
 
@@ -175,11 +180,10 @@ if __name__ == "__main__":
     parser.add_argument('--save_path', type=str, default='./experiments')
     parser.add_argument('--which_epoch', default='final',
                         type=str, help='0,1,2,3...or final')
-    parser.add_argument('--dataset', type=str, default='market1501',
-                        choices=['market1501', 'cuhk03', 'duke'])
+    parser.add_argument('--dataset', type=str, default='Market1501')
     parser.add_argument('--dataset_path', type=str,
-                        default='/home/hy/vscode/pcb_custom/datasets/Market1501')
-    parser.add_argument('--batch_size', default=512,
+                        default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
+    parser.add_argument('--batch_size', default=4,
                         type=int, help='batchsize')
     parser.add_argument('--share_conv', default=False, action='store_true')
     args = parser.parse_args()
@@ -195,13 +199,12 @@ if __name__ == "__main__":
 
     train_dataloader = getDataLoader(
         args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
-    # model = build_model(args.experiment, num_classes=len(train_dataloader.dataset.classes),
-    #                     share_conv=args.share_conv)
-    model = build_model(args.experiment, num_classes=751,
-                            share_conv=args.share_conv)
+
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids,
+                        share_conv=args.share_conv)
 
     model = util.load_network(model,
-                               save_dir_path, args.which_epoch)
+                              save_dir_path, args.which_epoch)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
