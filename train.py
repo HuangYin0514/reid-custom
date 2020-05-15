@@ -41,6 +41,7 @@ torch.cuda.manual_seed_all(1)
 save_dir_path = os.path.join(args.save_path, args.dataset)
 os.makedirs(save_dir_path, exist_ok=True)
 
+
 # Schedule learning rate--------------------------------------------
 def adjust_lr(epoch):
     step_size = 40
@@ -87,7 +88,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
                 for logits in outputs:
                     stripe_loss = criterion(logits, labels)
                     loss += stripe_loss
-            elif isinstance(outputs,(torch.Tensor,)):
+            elif isinstance(outputs, (torch.Tensor,)):
                 loss = criterion(outputs, labels)
             else:
                 raise Exception('outputs type is error !')
@@ -130,7 +131,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
 
 if __name__ == "__main__":
-    #dataset
+    # dataset
     train_dataloader = getDataLoader(
         args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
 
