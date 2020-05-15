@@ -7,9 +7,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 
-from dataloader import *
-from model import *
-import utils
+from data.dataloader import getDataLoader
+from models import *
+from utils import util
 from test import test
 
 
@@ -20,7 +20,7 @@ parser.add_argument('--save_path', type=str, default='./experiments')
 parser.add_argument('--dataset', type=str, default='market1501',
                     choices=['market1501', 'cuhk03', 'duke'])
 parser.add_argument('--dataset_path', type=str,
-                    default='/home/hy/vscode/pcb_custom/datasets/Market1501')
+                    default='/home/hy/vscode/reid-custom/data/pytorch_market/')
 parser.add_argument('--batch_size', default=64,
                     type=int, help='batch_size')
 parser.add_argument('--learning_rate', default=0.1, type=float,
@@ -58,7 +58,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     start_time = time.time()
 
     # Logger instance
-    logger = utils.Logger(save_dir_path)
+    logger = util.Logger(save_dir_path)
     logger.info('-' * 10)
     logger.info(vars(args))
 
