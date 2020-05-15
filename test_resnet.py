@@ -105,7 +105,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, default='Market1501')
     parser.add_argument('--dataset_path', type=str,
                         default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
-    parser.add_argument('--batch_size', default=4,
+    parser.add_argument('--batch_size', default=512,
                         type=int, help='batchsize')
     parser.add_argument('--share_conv', default=False, action='store_true')
     args = parser.parse_args()
