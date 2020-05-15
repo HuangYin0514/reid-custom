@@ -131,7 +131,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
 
 if __name__ == "__main__":
-
+    #dataset
     train_dataloader = getDataLoader(
         args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
     param_groups = [{'params': model.backbone.parameters(), 'lr_mult': 0.1},
                     {'params': new_params, 'lr_mult': 1.0}]
-                    
+
     optimizer = torch.optim.SGD(param_groups, lr=args.learning_rate, momentum=0.9, weight_decay=5e-4,
                                 nesterov=True)
 
