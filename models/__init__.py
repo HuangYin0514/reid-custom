@@ -1,9 +1,9 @@
 
 import torch
 
-from model import PCB_p6
-from model import Res_net
-from model import Resnet_self_attention
+from pcb import PCB_p6
+from resnet import Res_net
+from resnet_att import Resnet_self_attention
 
 
 __model_factory = {

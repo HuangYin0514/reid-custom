@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 
-
 class Self_Attn(nn.Module):
     """ Self attention Layer"""
     def __init__(self,in_dim):
