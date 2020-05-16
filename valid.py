@@ -105,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, default='Market1501')
     parser.add_argument('--dataset_path', type=str,
                         default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
+    parser.add_argument('--checkpoint', type=str,  default='./')
     parser.add_argument('--batch_size', default=512,
                         type=int, help='batchsize')
     parser.add_argument('--share_conv', default=False, action='store_true')
@@ -119,14 +120,11 @@ if __name__ == "__main__":
     logger = util.Logger(save_dir_path)
     logger.info(vars(args))
 
-    train_dataloader = getDataLoader(
-        args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
-
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids,
+    model = build_model(args.experiment, num_classes=1,
                         share_conv=args.share_conv)
 
     model = util.load_network(model,
-                              save_dir_path, args.which_epoch)
+                              args.checkpoint, args.which_epoch)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

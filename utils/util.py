@@ -154,11 +154,11 @@ def load_network(network, path, epoch_label):
 
     # # ------------- PCB specific -------------
     # # Load PCB from another dataset, change the fc_list parameters' shape
-    # for name in state_dict.keys():
-    #     if name[0:7] == 'fc_list':
-    #         desired_shape = network.state_dict()[name].shape
-    #         if desired_shape != state_dict[name].shape:
-    #             state_dict[name] = torch.randn(desired_shape)
+    for name in state_dict.keys():
+        if name[0:7] == 'fc_list':
+            desired_shape = network.state_dict()[name].shape
+            if desired_shape != state_dict[name].shape:
+                state_dict[name] = torch.randn(desired_shape)
     # # ------------------------------------------------
 
     network.load_state_dict(state_dict)
