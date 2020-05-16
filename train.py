@@ -10,7 +10,7 @@ from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
 from utils import util
-from test_resnet import test
+from valid import test
 
 
 # ---------------------- Settings ----------------------
