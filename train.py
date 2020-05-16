@@ -3,34 +3,37 @@ import os
 import time
 
 from valid import test
+from utils import util
 
 
 class Train():
-    def __init__(self, model, criterion, optimizer, scheduler, dataloader, num_epochs, device):
-        pass
+    def __init__(self, args):
+        # Make saving directory---------------------------------------------------------------------
+        save_dir_path = os.path.join(args.save_path, args.dataset)
+        os.makedirs(save_dir_path, exist_ok=True)
+        save_dir_path = save_dir_path
 
-    def train(self):
+        # Logger instance----------------------------------------------------------
+        self.logger = util.Logger(save_dir_path)
+        self.logger.info('-' * 10)
+        self.logger.info(vars(args))
+
+    def train(self, model, criterion, optimizer, scheduler, dataloader, num_epochs, device, args):
         # Schedule learning rate--------------------------------------------
-        def adjust_lr(self, epoch):
+        def adjust_lr(epoch):
             step_size = 40
             lr = args.learning_rate * (0.1 ** (epoch // step_size))
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
         start_time = time.time()
-
-        # Logger instance----------------------------------------------------------
-        logger = util.Logger(save_dir_path)
-        logger.info('-' * 10)
-        logger.info(vars(args))
-
         for epoch in range(num_epochs):
-            logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
+            self.logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
             model.train()
             adjust_lr(epoch)
 
-            # Training
+            # Training----------------------------------------------------------
             running_loss = 0.0
             batch_num = 0
             for data in dataloader:
@@ -60,32 +63,35 @@ class Train():
                 optimizer.step()
 
                 running_loss += loss.item() * inputs.size(0)
+            # ------------------------------------------------------------------
 
             epoch_loss = running_loss / len(dataloader.dataset)
-            logger.info('Training Loss: {:.4f}'.format(epoch_loss))
+            self.logger.info('Training Loss: {:.4f}'.format(epoch_loss))
 
-            # Save result to logger
-            logger.x_epoch_loss.append(epoch + 1)
-            logger.y_train_loss.append(epoch_loss)
+            # Save result to self.logger----------------------------------------------------------
+            self.logger.x_epoch_loss.append(epoch + 1)
+            self.logger.y_train_loss.append(epoch_loss)
 
+            # test ----------------------------------------------------------
             if (epoch + 1) % 20 == 0 or epoch + 1 == num_epochs:
                 # Testing / Validating
                 torch.cuda.empty_cache()
                 CMC, mAP = test(model, args.dataset, args.dataset_path, 512)
-                logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
+                self.logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
-                logger.x_epoch_test.append(epoch + 1)
-                logger.y_test['top1'].append(CMC[0])
-                logger.y_test['mAP'].append(mAP)
+                self.logger.x_epoch_test.append(epoch + 1)
+                self.logger.y_test['top1'].append(CMC[0])
+                self.logger.y_test['mAP'].append(mAP)
                 if epoch + 1 != num_epochs:
                     util.save_network(model, save_dir_path, str(epoch + 1))
-            logger.info('-' * 10)
+            self.logger.info('-' * 10)
+            # ---------------------------------------------------------------------------
 
         # Save the loss curve
-        logger.save_curve()
+        self.logger.save_curve()
 
         time_elapsed = time.time() - start_time
-        logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+        self.logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
         # Save final model weights
         util.save_network(model, save_dir_path, 'final')
