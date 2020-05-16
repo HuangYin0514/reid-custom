@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+import torch
 
 from valid import test
 from utils import util
@@ -11,7 +12,7 @@ class Train():
         # Make saving directory---------------------------------------------------------------------
         save_dir_path = os.path.join(args.save_path, args.dataset)
         os.makedirs(save_dir_path, exist_ok=True)
-        save_dir_path = save_dir_path
+        self.save_dir_path = save_dir_path
 
         # Logger instance----------------------------------------------------------
         self.logger = util.Logger(save_dir_path)
@@ -22,10 +23,11 @@ class Train():
         # Schedule learning rate--------------------------------------------
         def adjust_lr(epoch):
             step_size = 40
-            lr = args.learning_rate * (0.1 ** (epoch // step_size))
+            lr = args.lr * (0.1 ** (epoch // step_size))
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
+        # ++++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++
         start_time = time.time()
         for epoch in range(num_epochs):
             self.logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
@@ -73,7 +75,7 @@ class Train():
             self.logger.y_train_loss.append(epoch_loss)
 
             # test ----------------------------------------------------------
-            if (epoch + 1) % 20 == 0 or epoch + 1 == num_epochs:
+            if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
                 # Testing / Validating
                 torch.cuda.empty_cache()
                 CMC, mAP = test(model, args.dataset, args.dataset_path, 512)
@@ -83,15 +85,18 @@ class Train():
                 self.logger.y_test['top1'].append(CMC[0])
                 self.logger.y_test['mAP'].append(mAP)
                 if epoch + 1 != num_epochs:
-                    util.save_network(model, save_dir_path, str(epoch + 1))
+                    util.save_network(model, self.save_dir_path, str(epoch + 1))
             self.logger.info('-' * 10)
             # ---------------------------------------------------------------------------
 
-        # Save the loss curve
+        # ++++++++++++++++++++++++++++++++++start epoch end ++++++++++++++++++++++++++++++++++
+
+        # Save the loss curve---------------------------------------------------------------------------
         self.logger.save_curve()
 
+        # save running time ---------------------------------------------------------------------------
         time_elapsed = time.time() - start_time
         self.logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
-        # Save final model weights
-        util.save_network(model, save_dir_path, 'final')
+        # Save final model weights---------------------------------------------------------------------
+        util.save_network(model, self.save_dir_path, 'final')

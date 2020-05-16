@@ -90,5 +90,5 @@ if __name__ == "__main__":
     scheduler = None
 
     # train -----------------------------------------------------------------------------------
-    trainer = Train()
+    trainer = Train(args)
     trainer.train(model, criterion, optimizer, scheduler, train_dataloader, args.epochs, device, args)
