@@ -100,15 +100,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Testing arguments')
     parser.add_argument('--experiment', type=str, default='PCB_p6')
     parser.add_argument('--save_path', type=str, default='./experiments')
-    parser.add_argument('--which_epoch', default='final',
-                        type=str, help='0,1,2,3...or final')
+    parser.add_argument('--which_epoch', default='final', type=str, help='0,1,2,3...or final')
     parser.add_argument('--dataset', type=str, default='Market1501')
-    parser.add_argument('--dataset_path', type=str,
-                        default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
-    parser.add_argument('--checkpoint', type=str,
-                        default='/home/hy/vscode/reid-custom/experiments/Market1501')
-    parser.add_argument('--batch_size', default=512,
-                        type=int, help='batchsize')
+    parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
+    parser.add_argument('--checkpoint', type=str, default='/home/hy/vscode/reid-custom/experiments/Market1501')
+    parser.add_argument('--batch_size', default=512, type=int, help='batchsize')
     parser.add_argument('--share_conv', default=False, action='store_true')
     args = parser.parse_args()
 
