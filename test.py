@@ -165,10 +165,10 @@ def test(query_dataloader, gallery_dataloader, model, dataset, dataset_path, bat
         query_cams.extend(np.array(camids))
     query_features = torch.cat(query_features, dim=0)
     query_pids = np.asarray(query_pids)
-    query_cams = np.asarray(query_cams)
+    query_cams = np.asarray(query_cams)1
 
-    CMC, mAP, (sorted_index_list, sorted_y_true_list, junk_index_list) = evaluate(
-        query_features, query_pids, query_cams, gallery_features, gallery_pids, gallery_cams)
+    # evaluate ------------------------------------------------------------
+    CMC, mAP, _ = evaluate(query_features, query_pids, query_cams, gallery_features, gallery_pids, gallery_cams)
 
     return CMC, mAP
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     parser.add_argument('--share_conv', default=False, action='store_true')
 
     args = parser.parse_args()
-    
+
     # devie---------------------------------------------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
