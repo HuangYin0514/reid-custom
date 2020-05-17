@@ -28,18 +28,19 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     '''
     start_time = time.time()
 
-    # Logger instance
+    # Logger instance--------------------------------------------
     logger = util.Logger(save_dir_path)
     logger.info('-' * 10)
     logger.info(vars(args))
     logger.info(model)
-
+    # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
         model.train()
         adjust_lr(epoch, optimizer, args)
 
+        # ===================one epoch====================
         # Training
         running_loss = 0.0
         batch_num = 0
@@ -52,10 +53,10 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
             optimizer.zero_grad()
 
-            # with torch.set_grad_enabled(True):
+            # with torch.set_grad_enabled(True):-------------
             outputs = model(inputs)
 
-            # Sum up the stripe softmax loss
+            # Sum up the stripe softmax loss-------------------
             loss = 0
             if isinstance(outputs, (list,)):
                 for logits in outputs:
@@ -70,16 +71,17 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             optimizer.step()
 
             running_loss += loss.item() * inputs.size(0)
+        # ===================one epoch end================
 
         epoch_loss = running_loss / len(dataloader.dataset)
         logger.info('Training Loss: {:.4f}'.format(epoch_loss))
 
-        # Save result to logger
+        # Save result to logger---------------------------------
         logger.x_epoch_loss.append(epoch + 1)
         logger.y_train_loss.append(epoch_loss)
 
+        # Testing / Validating-----------------------------------
         if (epoch + 1) % 20 == 0 or epoch + 1 == num_epochs:
-            # Testing / Validating
             torch.cuda.empty_cache()
             CMC, mAP = test(model, args.dataset, args.dataset_path, 512)
             logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' %
@@ -92,12 +94,14 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
                 util.save_network(model, save_dir_path, str(epoch + 1))
         logger.info('-' * 10)
 
-    # Save the loss curve
+    # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
+
+    # Save the loss curve-----------------------------------
     logger.save_curve()
 
     time_elapsed = time.time() - start_time
     logger.info('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
 
-    # Save final model weights
+    # Save final model weights-----------------------------------
     util.save_network(model, save_dir_path, 'final')
