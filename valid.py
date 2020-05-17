@@ -48,10 +48,8 @@ def extract_feature(model, inputs, requires_norm, vectorize, requires_grad=False
 def test(model, dataset, dataset_path, batch_size, max_rank=100):
     model.eval()
     # test dataloader------------------------------------------------------------
-    gallery_dataloader = getDataLoader(
-        dataset, batch_size, dataset_path, 'gallery', shuffle=False, augment=False)
-    query_dataloader = getDataLoader(
-        dataset, batch_size, dataset_path, 'query', shuffle=False, augment=False)
+    gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', shuffle=False, augment=False)
+    query_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'query', shuffle=False, augment=False)
 
     # image information------------------------------------------------------------
     gallery_cams, gallery_pids = [], []
@@ -121,7 +119,7 @@ if __name__ == "__main__":
     model = util.load_network(model, args.checkpoint, args.which_epoch)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-    
+
     CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size)
 
     logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
