@@ -1,13 +1,13 @@
 
 import argparse
-
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
-from train import *
+from train import train
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -67,8 +67,6 @@ if __name__ == "__main__":
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)
 
-    
-
     # dataset------------------------------------------------------------------------------------
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
 
@@ -89,6 +87,9 @@ if __name__ == "__main__":
     # scheduler-----------------------------------------------------------------------------------
     scheduler = None
 
+    # save_dir_path-----------------------------------------------------------------------------------
+    save_dir_path = os.path.join(args.save_path, args.dataset)
+    os.makedirs(save_dir_path, exist_ok=True)
+
     # train -----------------------------------------------------------------------------------
-    trainer = Train(args)
-    trainer.train(model, criterion, optimizer, scheduler, train_dataloader, args.epochs, device, args)
+    train(model, criterion, optimizer, scheduler, train_dataloader, args.epochs, device, save_dir_path, args)

@@ -117,18 +117,13 @@ if __name__ == "__main__":
     logger = util.Logger(save_dir_path)
     logger.info(vars(args))
 
-    model = build_model(args.experiment, num_classes=1,
-                        share_conv=args.share_conv)
-
-    model = util.load_network(model,
-                              args.checkpoint, args.which_epoch)
-
+    model = build_model(args.experiment, num_classes=1, hare_conv=args.share_conv)
+    model = util.load_network(model, args.checkpoint, args.which_epoch)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     model = model.to(device)
+    
     CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size)
 
-    logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' %
-                (CMC[0], CMC[4], CMC[9], mAP))
+    logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
     # torch.cuda.empty_cache()

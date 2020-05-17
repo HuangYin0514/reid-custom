@@ -32,6 +32,7 @@ class Market1501(Dataset):
         self.query_dir = osp.join(self.data_dir, 'query')
         self.gallery_dir = osp.join(self.data_dir, 'bounding_box_test')
         self.extra_gallery_dir = osp.join(self.data_dir, 'images')
+        
         # data ----------------------------------------------------------------
         assert part in {'train', 'query', 'gallery'}, 'part not in folders'
         if part == 'train':
@@ -45,6 +46,7 @@ class Market1501(Dataset):
         if part == 'gallery':
             gallery = self.process_dir(self.gallery_dir, relabel=False)
             self.data = gallery
+
         # transform ------------------------------------------------------------
         self.transform = transform
 
