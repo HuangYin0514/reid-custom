@@ -36,9 +36,11 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
-        logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
+        logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
+        
         model.train()
+
         adjust_lr(epoch, optimizer, args)
 
         # ===================one epoch====================
