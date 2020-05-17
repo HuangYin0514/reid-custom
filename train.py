@@ -33,6 +33,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     logger.info('-' * 10)
     logger.info(vars(args))
     logger.info(model)
+    
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
