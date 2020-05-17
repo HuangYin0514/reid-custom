@@ -1,6 +1,8 @@
 
 from dataloader import getDataLoader
-
+import sys
+sys.path.append('/home/hy/vscode/reid-custom')
+print(sys.path)
 
 if __name__ == "__main__":
     # dataset
@@ -9,4 +11,3 @@ if __name__ == "__main__":
     # dataloader = getDataLoader(
     #     'Market1501', 4, '/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15', 'train', shuffle=True, augment=True)
     print()
-    

@@ -177,42 +177,36 @@ def test(model, dataset, dataset_path, batch_size, max_rank=100):
 
 
 if __name__ == "__main__":
+    # -----------------------------parameters setting --------------------------------
     parser = argparse.ArgumentParser(description='Testing arguments')
     parser.add_argument('--experiment', type=str, default='PCB_p6')
     parser.add_argument('--save_path', type=str, default='./experiments')
-    parser.add_argument('--which_epoch', default='final',
-                        type=str, help='0,1,2,3...or final')
+    parser.add_argument('--which_epoch', default='final', type=str, help='0,1,2,3...or final')
     parser.add_argument('--dataset', type=str, default='Market1501')
-    parser.add_argument('--dataset_path', type=str,
-                        default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
-    parser.add_argument('--checkpoint', type=str,
-                        default='/home/hy/vscode/reid-custom/experiments/Market1501')
-    parser.add_argument('--batch_size', default=512,
-                        type=int, help='batchsize')
+    parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
+    parser.add_argument('--checkpoint', type=str, default='/home/hy/vscode/reid-custom/experiments/Market1501')
+    parser.add_argument('--batch_size', default=512, type=int, help='batchsize')
     parser.add_argument('--share_conv', default=False, action='store_true')
     args = parser.parse_args()
 
+    # devie---------------------------------------------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Make saving directory
+    # model------------------------------------------------------------------------------------
+    model = build_model(args.experiment, num_classes=1, share_conv=args.share_conv)
+    model = util.load_network(model, args.checkpoint, args.which_epoch)
+    model = model.to(device)
+    
+    # save_dir_path-----------------------------------------------------------------------------------
     save_dir_path = os.path.join(args.save_path, args.dataset)
     os.makedirs(save_dir_path, exist_ok=True)
 
+    # logger------------------------------------------------------------------------------------
     logger = util.Logger(save_dir_path)
     logger.info(vars(args))
-
-    model = build_model(args.experiment, num_classes=1,
-                        share_conv=args.share_conv)
-
-    model = util.load_network(model,
-                              args.checkpoint, args.which_epoch)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    model = model.to(device)
+    
+    # test -----------------------------------------------------------------------------------
     CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size)
-
-    logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' %
-                (CMC[0], CMC[4], CMC[9], mAP))
+    logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
     # torch.cuda.empty_cache()
