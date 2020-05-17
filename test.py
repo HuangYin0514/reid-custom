@@ -139,8 +139,12 @@ def evaluate(query_features, query_labels, query_cams, gallery_features, gallery
 
 
 # ---------------------- Start testing ----------------------
-def test(query_dataloader, gallery_dataloader, model, dataset, dataset_path, batch_size, max_rank=100):
+def test(model, dataset, dataset_path, batch_size, max_rank=100):
     model.eval()
+
+    # test dataloader------------------------------------------------------------
+    query_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'query', shuffle=False, augment=False)
+    gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', shuffle=False, augment=False)
 
     # image information------------------------------------------------------------
     gallery_cams, gallery_pids = [], []
@@ -193,10 +197,6 @@ if __name__ == "__main__":
     # devie---------------------------------------------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # test dataloader------------------------------------------------------------
-    query_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'query', shuffle=False, augment=False)
-    gallery_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'gallery', shuffle=False, augment=False)
-
     # model------------------------------------------------------------------------------------
     model = build_model(args.experiment, num_classes=1, share_conv=args.share_conv)
     model = util.load_network(model, args.checkpoint, args.which_epoch)
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     logger.info(vars(args))
 
     # test -----------------------------------------------------------------------------------
-    CMC, mAP = test(query_dataloader, gallery_dataloader, model, args.dataset, args.dataset_path, args.batch_size)
+    CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size)
     logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
     # torch.cuda.empty_cache()

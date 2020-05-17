@@ -33,7 +33,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     logger.info('-' * 10)
     logger.info(vars(args))
     logger.info(model)
-    
+
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
@@ -85,8 +85,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         if (epoch + 1) % 20 == 0 or epoch + 1 == num_epochs:
             torch.cuda.empty_cache()
             CMC, mAP = test(model, args.dataset, args.dataset_path, 512)
-            logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' %
-                        (CMC[0], CMC[4], CMC[9], mAP))
+            logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
             logger.x_epoch_test.append(epoch + 1)
             logger.y_test['top1'].append(CMC[0])
