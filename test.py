@@ -1,4 +1,3 @@
-
 import argparse
 import os
 
@@ -15,9 +14,8 @@ from models import build_model
 from metrics.distance import compute_distance_matrix
 from metrics.rank import evaluate_rank
 
+
 # ---------------------- Extract features ----------------------
-
-
 def get_cam_label(img_path):
     camera_ids = []
     labels = []
