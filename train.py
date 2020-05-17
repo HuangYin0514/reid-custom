@@ -38,7 +38,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     for epoch in range(num_epochs):
 
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
-        
+
         model.train()
 
         adjust_lr(epoch, optimizer, args)
@@ -102,8 +102,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     logger.save_curve()
 
     time_elapsed = time.time() - start_time
-    logger.info('Training complete in {:.0f}m {:.0f}s'.format(
-        time_elapsed // 60, time_elapsed % 60))
+    logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # Save final model weights-----------------------------------
     util.save_network(model, save_dir_path, 'final')
