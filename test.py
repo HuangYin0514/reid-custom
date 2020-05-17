@@ -165,7 +165,7 @@ def test(query_dataloader, gallery_dataloader, model, dataset, dataset_path, bat
         query_cams.extend(np.array(camids))
     query_features = torch.cat(query_features, dim=0)
     query_pids = np.asarray(query_pids)
-    query_cams = np.asarray(query_cams)1
+    query_cams = np.asarray(query_cams)
 
     # evaluate ------------------------------------------------------------
     CMC, mAP, _ = evaluate(query_features, query_pids, query_cams, gallery_features, gallery_pids, gallery_cams)
