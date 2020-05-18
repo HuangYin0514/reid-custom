@@ -32,7 +32,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     logger = util.Logger(save_dir_path)
     logger.info('-' * 10)
     logger.info(vars(args))
-    logger.info(model)
+    # logger.info(model)
 
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
