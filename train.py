@@ -72,6 +72,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
             loss.backward()
             optimizer.step()
+            
 
             running_loss += loss.item() * inputs.size(0)
         # ===================one epoch end================
