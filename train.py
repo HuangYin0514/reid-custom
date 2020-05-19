@@ -13,14 +13,6 @@ from utils import util
 from test import test
 
 
-# Schedule learning rate--------------------------------------------
-def adjust_lr(epoch, optimizer, args):
-    step_size = 40
-    lr = args.lr * (0.1 ** (epoch // step_size))
-    for g in optimizer.param_groups:
-        g['lr'] = lr * g.get('lr_mult', 1)
-
-
 # ---------------------- Train function ----------------------
 def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device, save_dir_path, args):
     '''
@@ -40,8 +32,6 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
         model.train()
-
-        adjust_lr(epoch, optimizer, args)
 
         # ===================one epoch====================
         # Training
@@ -72,7 +62,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
             loss.backward()
             optimizer.step()
-            
+            scheduler.step()
 
             running_loss += loss.item() * inputs.size(0)
         # ===================one epoch end================
