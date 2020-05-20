@@ -20,7 +20,7 @@ def getDataLoader(dataset, batch_size, dataset_path, part, shuffle=True, augment
         raise KeyError('Unknown model: {}. Must be one of {}'.format(name, avai_dataset))
     # transform ------------------------------------------------------------
     transform_list = [
-        transforms.Resize(size=(384, 128), interpolation=3),
+        transforms.Resize(size=(384, 192), interpolation=3),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]
