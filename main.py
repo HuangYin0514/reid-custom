@@ -46,8 +46,8 @@ parser.add_argument('--test_every', type=int, default=10)
 """
 Optimizer parameters
 """
-parser.add_argument('--lr', type=float, default=0.1)
-parser.add_argument('--lr_base', type=float, default=0.01)
+parser.add_argument('--lr', type=float, default=0.02)
+parser.add_argument('--lr_base_mult', type=float, default=0.5)
 
 
 """
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr_mult': 0.1},
-                    {'params': new_params, 'lr_mult': 1.0}]
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr*args.lr_base_mult},
+                    {'params': new_params}]
     optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
