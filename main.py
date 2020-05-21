@@ -34,7 +34,7 @@ Model parameters
 """
 parser.add_argument('--share_conv', default=False, action='store_true')
 parser.add_argument('--stripes', type=int, default=6)
-parser.add_argument('--open_layers', nargs='+',default=[])
+parser.add_argument('--open_layers', nargs='+', default=[])
 
 
 """
@@ -45,12 +45,11 @@ parser.add_argument('--test_every', type=int, default=10)
 parser.add_argument('--fixbase_epoch', type=int, default=0)
 
 
-
 """
 Optimizer parameters
 """
-parser.add_argument('--lr', type=float, default=0.02)
-parser.add_argument('--lr_base_mult', type=float, default=0.5)
+parser.add_argument('--lr', type=float, default=0.1)
+parser.add_argument('--lr_base', type=float, default=0.01)
 
 
 """
@@ -71,7 +70,7 @@ if __name__ == "__main__":
     torch.cuda.manual_seed_all(1)
 
     # dataset------------------------------------------------------------------------------------
-    train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train', shuffle=True, augment=True)
+    train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
     model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, share_conv=args.share_conv)
@@ -83,12 +82,12 @@ if __name__ == "__main__":
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr*args.lr_base_mult},
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr_base},
                     {'params': new_params}]
-    optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
+    optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, dampening=0, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[25, 50], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.decay_every, gamma=args.gamma)
 
     # save_dir_path-----------------------------------------------------------------------------------
     save_dir_path = os.path.join(args.save_path, args.dataset)
