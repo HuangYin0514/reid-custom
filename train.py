@@ -13,6 +13,7 @@ from utils import util
 from test import test
 from utils import torchtool
 
+
 # ---------------------- Train function ----------------------
 def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device, save_dir_path, args):
     '''
@@ -82,9 +83,9 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         logger.y_train_loss.append(epoch_loss)
 
         # Testing / Validating-----------------------------------
-        if (epoch + 1) % 20 == 0 or epoch + 1 == num_epochs:
+        if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
             torch.cuda.empty_cache()
-            CMC, mAP = test(model, args.dataset, args.dataset_path, 512)
+            CMC, mAP = test(model, args.dataset, args.dataset_path, 512, args)
             logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
             logger.x_epoch_test.append(epoch + 1)

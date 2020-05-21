@@ -137,12 +137,12 @@ def evaluate(query_features, query_labels, query_cams, gallery_features, gallery
 
 
 # ---------------------- Start testing ----------------------
-def test(model, dataset, dataset_path, batch_size, max_rank=100):
+def test(model, dataset, dataset_path, batch_size, args, max_rank=100):
     model.eval()
 
     # test dataloader------------------------------------------------------------
-    query_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'query', shuffle=False, augment=False)
-    gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', shuffle=False, augment=False)
+    query_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'query',   args, shuffle=False, augment=False)
+    gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', args, shuffle=False, augment=False)
 
     # image information------------------------------------------------------------
     gallery_cams, gallery_pids = [], []
@@ -186,8 +186,10 @@ if __name__ == "__main__":
 
     parser.add_argument('--dataset', type=str, default='Market1501')
     parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
+    parser.add_argument('--height', type=int, default=384, help='height of the input image')
+    parser.add_argument('--width', type=int, default=128, help='width of the input image')
 
-    parser.add_argument('--batch_size', default=512, type=int, help='batchsize')
+    parser.add_argument('--batch_size', default=3, type=int, help='batchsize')
     parser.add_argument('--share_conv', default=False, action='store_true')
 
     args = parser.parse_args()
@@ -209,7 +211,7 @@ if __name__ == "__main__":
     logger.info(vars(args))
 
     # test -----------------------------------------------------------------------------------
-    CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size)
+    CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size, args)
     logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
 
     # torch.cuda.empty_cache()
