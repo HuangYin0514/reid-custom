@@ -1,7 +1,5 @@
-from __future__ import division, print_function, absolute_import
 
-
-def accuracy(output, target, topk=(1, )):
+def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for
     the specified values of k.
 
@@ -33,5 +31,5 @@ def accuracy(output, target, topk=(1, )):
         correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
         acc = correct_k.mul_(100.0 / batch_size)
         res.append(acc)
-
+    
     return res

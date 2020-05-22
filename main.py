@@ -33,7 +33,7 @@ parser.add_argument('--open_layers', nargs='+', default=[])
 
 # Train parameters-------------------------------------------------------------
 parser.add_argument('--epochs', type=int, default=60)
-parser.add_argument('--test_every', type=int, default=10)
+parser.add_argument('--test_every', type=int, default=1)
 parser.add_argument('--fixbase_epoch', type=int, default=0)
 
 

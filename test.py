@@ -6,55 +6,32 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from torchvision import datasets, transforms
-from sklearn.metrics import average_precision_score
 
 from utils import util
 from dataloader import getDataLoader
 from models import build_model
-from metrics.metrics import cmc_map
+
+import metrics
 
 # ---------------------- Extract features ----------------------
 
 
-def get_cam_label(img_path):
-    camera_ids = []
-    labels = []
-    for path, _ in img_path:
-        filename = path.split('/')[-1]
-        label = filename[0:4]
-        camera = filename.split('c')[1]
-        if label[0:2] == '-1':
-            labels.append(-1)
-        else:
-            labels.append(int(label))
-        camera_ids.append(int(camera[0]))
-    return np.array(camera_ids), np.array(labels)
+def _parse_data_for_eval(data):
+    imgs = data[0]
+    pids = data[1]
+    camids = data[2]
+    return imgs, pids, camids
 
 
-def extract_feature(model, inputs, requires_norm, vectorize, requires_grad=False):
+def _extract_features(model, input):
+    model.eval()
+    return model(input)
 
-    # Move to model's device
-    inputs = inputs.to(next(model.parameters()).device)
-
-    with torch.set_grad_enabled(requires_grad):
-        features = model(inputs)
-    size = features.shape
-    if requires_norm:
-        # [N, C*H]
-        features = features.view(size[0], -1)
-        # norm feature
-        fnorm = features.norm(p=2, dim=1)
-        features = features.div(fnorm.unsqueeze(dim=1))
-    if vectorize:
-        features = features.view(size[0], -1)
-    else:
-        # Back to [N, C, H=S]
-        features = features.view(size)
-
-    return features
 
 # ---------------------- Start testing ----------------------
-def test(model, dataset, dataset_path, batch_size, args, max_rank=100):
+@torch.no_grad()
+def test(model, dataset, dataset_path, batch_size, device, args, normalize_feature=False,
+         dist_metric='cosine'):
     model.eval()
 
     # test dataloader------------------------------------------------------------
@@ -62,41 +39,56 @@ def test(model, dataset, dataset_path, batch_size, args, max_rank=100):
     gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', args, shuffle=False, augment=False)
 
     # image information------------------------------------------------------------
-    gallery_cams, gallery_pids = [], []
-    query_cams, query_pids = [], []
-    gallery_features = []
-    query_features = []
+    print('Extracting features from query set ...')
+    qf, q_pids, q_camids = [], [], []  # query features, query person IDs and query camera IDs
+    q_score = []
+    for batch_idx, data in enumerate(query_dataloader):
+        imgs, pids, camids = _parse_data_for_eval(data)
+        imgs = imgs.to(device)
+        features = _extract_features(model, imgs)
+        qf.append(features)
+        q_pids.extend(pids)
+        q_camids.extend(camids)
+    qf = torch.cat(qf, 0)
+    q_pids = np.asarray(q_pids)
+    q_camids = np.asarray(q_camids)
+    print('Done, obtained {}-by-{} matrix'.format(qf.size(0), qf.size(1)))
 
-    # gallery_dataloader ------------------------------------------------------------
-    for inputs, pids, camids in gallery_dataloader:
-        gallery_features.append(extract_feature(model, inputs, requires_norm=True, vectorize=True).cpu().data)
-        gallery_pids.extend(np.array(pids))
-        gallery_cams.extend(np.array(camids))
-    gallery_features = torch.cat(gallery_features, dim=0)
-    gallery_pids = np.asarray(gallery_pids)
-    gallery_cams = np.asarray(gallery_cams)
+    print('Extracting features from gallery set ...')
+    gf, g_pids, g_camids = [], [], []  # gallery features, gallery person IDs and gallery camera IDs
+    g_score = []
+    for batch_idx, data in enumerate(gallery_dataloader):
+        imgs, pids, camids = _parse_data_for_eval(data)
+        imgs = imgs.to(device)
+        features = _extract_features(model, imgs)
+        gf.append(features)
+        g_pids.extend(pids)
+        g_camids.extend(camids)
+    gf = torch.cat(gf, 0)
+    g_pids = np.asarray(g_pids)
+    g_camids = np.asarray(g_camids)
+    print('Done, obtained {}-by-{} matrix'.format(gf.size(0), gf.size(1)))
 
-    # query_dataloader ------------------------------------------------------------
-    for inputs, pids, camids in query_dataloader:
-        query_features.append(extract_feature(
-            model, inputs, requires_norm=True, vectorize=True).cpu().data)
-        query_pids.extend(np.array(pids))
-        query_cams.extend(np.array(camids))
-    query_features = torch.cat(query_features, dim=0)
-    query_pids = np.asarray(query_pids)
-    query_cams = np.asarray(query_cams)
+    if normalize_feature:
+        print('Normalzing features with L2 norm ...')
+        qf = F.normalize(qf, p=2, dim=1)
+        gf = F.normalize(gf, p=2, dim=1)
 
-    # evaluate ------------------------------------------------------------
-    query_features = np.asarray(query_features)
-    gallery_features = np.asarray(gallery_features)
-    TMP = np.dot(query_features, gallery_features.T)
-    dist = np.sqrt(2-2*TMP)
+    print('Computing distance matrix with metric={} ...'.format(dist_metric))
+    distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
+    distmat = distmat.numpy()
 
-    r, m_ap = cmc_map(dist, query_pids, gallery_pids, query_cams, gallery_cams,
-                      separate_camera_set=False,
-                      single_gallery_shot=False,
-                      first_match_break=True)
-    return r, m_ap
+    print('Computing CMC and mAP ...')
+    cmc, mAP = metrics.evaluate_rank(
+        distmat,
+        q_pids,
+        g_pids,
+        q_camids,
+        g_camids,
+        use_metric_cuhk03=False
+    )
+
+    return cmc, mAP
 
 
 if __name__ == "__main__":
@@ -135,7 +127,7 @@ if __name__ == "__main__":
     logger.info(vars(args))
 
     # test -----------------------------------------------------------------------------------
-    CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size, args)
-    logger.info('Testing: top1:%.2f top5:%.2f top10:%.2f mAP:%.2f' % (CMC[0], CMC[4], CMC[9], mAP))
+    CMC, mAP = test(model, args.dataset, args.dataset_path, args.batch_size, device, args)
+    logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
 
     # torch.cuda.empty_cache()

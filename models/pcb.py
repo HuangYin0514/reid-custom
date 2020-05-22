@@ -78,8 +78,10 @@ class PCBModel(nn.Module):
 
         # Return the features_H
         if not self.training:
-            return torch.stack(features_H, dim=2)
-
+            v_g =  torch.cat(features_H, dim=2)
+            v_g = F.normalize(v_g, p=2, dim=1)
+            return v_g.view(v_g.size(0), -1)
+            
         # [N, C=num_classes]
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1))

@@ -29,8 +29,9 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
-        scheduler.step()
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
+
+        scheduler.step()
 
         model.train()
 
@@ -58,16 +59,19 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             for logits in outputs:
                 stripe_loss = criterion(logits, labels)
                 loss += stripe_loss
-            loss/=6
+            loss /= 6
             loss.backward()
             optimizer.step()
-            
 
             running_loss += loss.item() * inputs.size(0)
         # ===================one epoch end================
 
         epoch_loss = running_loss / len(dataloader.dataset)
         logger.info('Training Loss: {:.4f}'.format(epoch_loss))
+
+        # time_remaining------------------------------------------
+        time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)/3600
+        logger.info('time remaining  is : {:.4f} h'.format(time_remaining))
 
         # Save result to logger---------------------------------
         logger.x_epoch_loss.append(epoch + 1)
@@ -76,7 +80,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         # Testing / Validating-----------------------------------
         if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
             torch.cuda.empty_cache()
-            CMC, mAP = test(model, args.dataset, args.dataset_path, 512, args)
+            CMC, mAP = test(model, args.dataset, args.dataset_path, 512, device, args)
             logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
 
             logger.x_epoch_test.append(epoch + 1)
