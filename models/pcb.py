@@ -85,13 +85,6 @@ class PCBModel(nn.Module):
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1))
                        for i in range(self.num_stripes)]
 
-        if self.loss == 'softmax':
-            return logits_list
-        elif self.loss == 'triplet':
-            return logits_list, torch.stack(features_H, dim=2)
-        else:
-            raise KeyError("Unsupported loss: {}".format(self.loss))
-
         return logits_list
 
 
