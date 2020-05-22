@@ -44,30 +44,19 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         # ===================one epoch====================
         # Training
         running_loss = 0.0
-        batch_num = 0
         for data in dataloader:
             inputs, labels, _ = data
-            batch_num += 1
-
             inputs = inputs.to(device)
             labels = labels.to(device)
 
             optimizer.zero_grad()
-
             # with torch.set_grad_enabled(True):-------------
             outputs = model(inputs)
-
             # Sum up the stripe softmax loss-------------------
             loss = 0
-            if isinstance(outputs, (list,)):
-                for logits in outputs:
-                    stripe_loss = criterion(logits, labels)
-                    loss += stripe_loss
-            elif isinstance(outputs, (torch.Tensor,)):
-                loss = criterion(outputs, labels)
-            else:
-                raise Exception('outputs type is error !')
-
+            for logits in outputs:
+                stripe_loss = criterion(logits, labels)
+                loss += stripe_loss
             loss.backward()
             optimizer.step()
             scheduler.step()
