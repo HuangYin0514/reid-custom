@@ -29,7 +29,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
-
+        scheduler.step()
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
         model.train()
@@ -61,7 +61,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             loss/=6
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            
 
             running_loss += loss.item() * inputs.size(0)
         # ===================one epoch end================
