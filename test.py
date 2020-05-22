@@ -76,7 +76,7 @@ def test(model, dataset, dataset_path, batch_size, device, args, normalize_featu
 
     print('Computing distance matrix with metric={} ...'.format(dist_metric))
     distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
-    distmat = distmat.numpy()
+    distmat = distmat.cpu().numpy()
 
     print('Computing CMC and mAP ...')
     cmc, mAP = metrics.evaluate_rank(
