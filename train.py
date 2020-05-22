@@ -33,13 +33,14 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
         model.train()
-        # train open_specified_layers--------------------------------------------------
-        if (epoch+1) <= args.fixbase_epoch and args.open_layers is not None:
-            logger.info('* Only train {} (epoch: {}/{})'.format(args.open_layers, epoch+1, fixbase_epoch))
-            torchtool.open_specified_layers(model, args.open_layers)
-        else:
-            # logger.info('open all layers.')
-            torchtool.open_all_layers(model)
+
+        # # train open_specified_layers--------------------------------------------------
+        # if (epoch+1) <= args.fixbase_epoch and args.open_layers is not None:
+        #     logger.info('* Only train {} (epoch: {}/{})'.format(args.open_layers, epoch+1, fixbase_epoch))
+        #     torchtool.open_specified_layers(model, args.open_layers)
+        # else:
+        #     # logger.info('open all layers.')
+        #     torchtool.open_all_layers(model)
 
         # ===================one epoch====================
         # Training
