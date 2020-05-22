@@ -69,14 +69,11 @@ class PCBModel(nn.Module):
         # [N, C=256, H=S, W=1]
         if self.share_conv:
             features_H = self.local_conv(features_G)
-            features_H = [features_H[:, :, i, :]
-                          for i in range(self.num_stripes)]
+            features_H = [features_H[:, :, i, :] for i in range(self.num_stripes)]
         else:
             features_H = []
-
             for i in range(self.num_stripes):
-                stripe_features_H = self.local_conv_list[i](
-                    features_G[:, :, i, :])
+                stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
                 features_H.append(stripe_features_H)
 
         # Return the features_H
@@ -96,8 +93,6 @@ class PCBModel(nn.Module):
             raise KeyError("Unsupported loss: {}".format(self.loss))
 
         return logits_list
-
-
 
 
 def PCB_p6(num_classes, share_conv, num_stripes=6, **kwargs):
