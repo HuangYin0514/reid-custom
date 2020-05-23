@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torchvision import models
+from utils import torchtool
 
 
 class PCBModel(nn.Module):
@@ -18,21 +19,23 @@ class PCBModel(nn.Module):
         self.share_conv = share_conv
         self.loss = loss
 
+        # bone--------------------------------------------------------------------------
         resnet = models.resnet50(pretrained=True)
         # Modifiy the stride of last conv layer
-        resnet.layer4[0].conv2 = nn.Conv2d(
-            512, 512, kernel_size=3, bias=False, stride=1, padding=1)
+        resnet.layer4[0].conv2 = nn.Conv2d(512, 512, kernel_size=3, bias=False, stride=1, padding=1)
         resnet.layer4[0].downsample = nn.Sequential(
             nn.Conv2d(1024, 2048, kernel_size=1, stride=1, bias=False),
             nn.BatchNorm2d(2048))
-
         # Remove avgpool and fc layer of resnet
         modules = list(resnet.children())[:-2]
         self.backbone = nn.Sequential(*modules)
 
-        # Add new layers
+        ####################################################################################
+
+        # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.num_stripes, 1))
 
+        # local_conv--------------------------------------------------------------------
         if share_conv:
             self.local_conv = nn.Sequential(
                 nn.Conv2d(2048, 256, kernel_size=1),
@@ -42,29 +45,30 @@ class PCBModel(nn.Module):
             self.local_conv_list = nn.ModuleList()
             for _ in range(num_stripes):
                 local_conv = nn.Sequential(
-                    nn.Conv1d(2048, 256, kernel_size=1),
-                    nn.BatchNorm1d(256),
+                    nn.Conv2d(2048, 256, kernel_size=1),
+                    nn.BatchNorm2d(256),
                     nn.ReLU(inplace=True))
+                local_conv.apply(torchtool.weights_init_kaiming)
                 self.local_conv_list.append(local_conv)
 
-        # Classifier for each stripe
+        # Classifier for each stripe--------------------------------------------------------------------------
         self.fc_list = nn.ModuleList()
         for _ in range(num_stripes):
             fc = nn.Linear(256, num_classes)
-
-            nn.init.normal_(fc.weight, std=0.001)
-            nn.init.constant_(fc.bias, 0)
-
+            fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
     def forward(self, x):
+        # backbone------------------------------------------------------------------------------------
+        # tensor T
         resnet_features = self.backbone(x)
 
+        # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]
         assert resnet_features.size(2) % self.num_stripes == 0, 'Image height cannot be divided by num_strides'
-
         features_G = self.avgpool(resnet_features)
 
+        # 1x1 conv---------------------------------------------------------------------------------
         # [N, C=256, H=S, W=1]
         if self.share_conv:
             features_H = self.local_conv(features_G)
@@ -72,15 +76,16 @@ class PCBModel(nn.Module):
         else:
             features_H = []
             for i in range(self.num_stripes):
-                stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
+                stripe_features_H = self.local_conv_list[i](features_G[:, :, i:i+1, :])
                 features_H.append(stripe_features_H)
 
-        # Return the features_H
+        # Return the features_H***********************************************************************
         if not self.training:
             v_g = torch.cat(features_H, dim=2)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
 
+        # fc---------------------------------------------------------------------------------
         # [N, C=num_classes]
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.num_stripes)]

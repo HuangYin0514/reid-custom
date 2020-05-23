@@ -31,9 +31,9 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
-        scheduler.step()
 
         model.train()
+        scheduler.step()
 
         # # train open_specified_layers--------------------------------------------------
         # if (epoch+1) <= args.fixbase_epoch and args.open_layers is not None:

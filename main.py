@@ -71,8 +71,8 @@ if __name__ == "__main__":
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
     param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr_base},
-                    {'params': new_params}]
-    optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, dampening=0, weight_decay=5e-4, nesterov=True)
+                    {'params': new_params, 'lr': args.lr}]
+    optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.decay_every, gamma=args.gamma)
