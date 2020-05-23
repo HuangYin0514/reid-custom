@@ -11,7 +11,8 @@ from utils import util
 from dataloader import getDataLoader
 from models import build_model
 
-import metrics
+from metrics import distance
+from metrics import rank
 
 # ---------------------- Extract features ----------------------
 
@@ -75,20 +76,23 @@ def test(model, dataset, dataset_path, batch_size, device, args, normalize_featu
         gf = F.normalize(gf, p=2, dim=1)
 
     print('Computing distance matrix with metric={} ...'.format(dist_metric))
-    distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
-    distmat = distmat.cpu().numpy()
+    qf = np.array(qf)
+    gf = np.array(gf)
+    dist = distance.cosine_dist(qf, gf)
+    rank_results = np.argsort(dist)[:, ::-1]
 
     print('Computing CMC and mAP ...')
-    cmc, mAP = metrics.evaluate_rank(
-        distmat,
-        q_pids,
-        g_pids,
-        q_camids,
-        g_camids,
-        use_metric_cuhk03=False
-    )
+    APs, CMC = [], []
+    for idx, data in enumerate(zip(rank_results, q_camids, q_pids)):
+        a_rank, query_camid, query_pid = data
+        ap, cmc = rank.compute_AP(a_rank, query_camid, query_pid, g_camids, g_pids)
+        APs.append(ap), CMC.append(cmc)
+    MAP = np.array(APs).mean()
+    min_len = min([len(cmc) for cmc in CMC])
+    CMC = [cmc[:min_len] for cmc in CMC]
+    CMC = np.mean(np.array(CMC), axis=0)
 
-    return cmc, mAP
+    return CMC, MAP
 
 
 if __name__ == "__main__":
