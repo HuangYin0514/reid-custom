@@ -76,8 +76,8 @@ def test(model, dataset, dataset_path, batch_size, device, args, normalize_featu
         gf = F.normalize(gf, p=2, dim=1)
 
     print('Computing distance matrix with metric={} ...'.format(dist_metric))
-    qf = np.array(qf)
-    gf = np.array(gf)
+    qf = np.array(qf.cpu())
+    gf = np.array(gf.cpu())
     dist = distance.cosine_dist(qf, gf)
     rank_results = np.argsort(dist)[:, ::-1]
 
