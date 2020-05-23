@@ -71,7 +71,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
         # time_remaining------------------------------------------
         time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)
-        logger.info('time remaining  is : {:.1f}h : {:.2f}m'.format(time_remaining//3600,time_remaining/60%60))
+        logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600,time_remaining/60%60))
 
         # Save result to logger---------------------------------
         logger.x_epoch_loss.append(epoch + 1)
