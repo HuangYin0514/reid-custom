@@ -61,8 +61,7 @@ class PCBModel(nn.Module):
         resnet_features = self.backbone(x)
 
         # [N, C, H, W]
-        assert resnet_features.size(
-            2) % self.num_stripes == 0, 'Image height cannot be divided by num_strides'
+        assert resnet_features.size(2) % self.num_stripes == 0, 'Image height cannot be divided by num_strides'
 
         features_G = self.avgpool(resnet_features)
 
@@ -78,14 +77,13 @@ class PCBModel(nn.Module):
 
         # Return the features_H
         if not self.training:
-            v_g =  torch.cat(features_H, dim=2)
+            v_g = torch.cat(features_H, dim=2)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
-            
+
         # [N, C=num_classes]
         batch_size = x.size(0)
-        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1))
-                       for i in range(self.num_stripes)]
+        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.num_stripes)]
 
         return logits_list
 
