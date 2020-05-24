@@ -6,50 +6,40 @@ from utils import torchtool
 
 
 class PCBModel(nn.Module):
-    def __init__(self,
-                 num_classes,
-                 num_stripes,
-                 share_conv,
-                 loss='softmax',
-                 ** kwargs):
+    def __init__(self, num_classes, num_stripes, share_conv, loss='softmax', ** kwargs):
 
         super(PCBModel, self).__init__()
         self.num_stripes = num_stripes
         self.num_classes = num_classes
-        self.share_conv = share_conv
         self.loss = loss
 
         # bone--------------------------------------------------------------------------
         resnet = models.resnet50(pretrained=True)
-        # Modifiy the stride of last conv layer
-        resnet.layer4[0].conv2 = nn.Conv2d(512, 512, kernel_size=3, bias=False, stride=1, padding=1)
-        resnet.layer4[0].downsample = nn.Sequential(
-            nn.Conv2d(1024, 2048, kernel_size=1, stride=1, bias=False),
-            nn.BatchNorm2d(2048))
-        # Remove avgpool and fc layer of resnet
-        modules = list(resnet.children())[:-2]
-        self.backbone = nn.Sequential(*modules)
+        # Modifiy the stride of last conv layer----------------------------
+        resnet.layer4[0].downsample[0].stride = (1, 1)
+        resnet.layer4[0].conv2.stride = (1, 1)
+        # Remove avgpool and fc layer of resnet------------------------------
+        # modules = list(resnet.children())[:-2]
+        # self.backbone = nn.Sequential(*modules)
+        self.backbone = nn.Sequential(
+            resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool,
+            resnet.layer1, resnet.layer2, resnet.layer3, resnet.layer4)
 
         ####################################################################################
 
         # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.num_stripes, 1))
+        self.dropout = nn.Dropout(p=0.5)
 
         # local_conv--------------------------------------------------------------------
-        if share_conv:
-            self.local_conv = nn.Sequential(
-                nn.Conv2d(2048, 256, kernel_size=1),
+        self.local_conv_list = nn.ModuleList()
+        for _ in range(num_stripes):
+            local_conv = nn.Sequential(
+                nn.Conv2d(2048, 256, kernel_size=1, bias=False),
                 nn.BatchNorm2d(256),
                 nn.ReLU(inplace=True))
-        else:
-            self.local_conv_list = nn.ModuleList()
-            for _ in range(num_stripes):
-                local_conv = nn.Sequential(
-                    nn.Conv2d(2048, 256, kernel_size=1),
-                    nn.BatchNorm2d(256),
-                    nn.ReLU(inplace=True))
-                local_conv.apply(torchtool.weights_init_kaiming)
-                self.local_conv_list.append(local_conv)
+            local_conv.apply(torchtool.weights_init_kaiming)
+            self.local_conv_list.append(local_conv)
 
         # Classifier for each stripe--------------------------------------------------------------------------
         self.fc_list = nn.ModuleList()
@@ -65,19 +55,15 @@ class PCBModel(nn.Module):
 
         # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]
-        assert resnet_features.size(2) % self.num_stripes == 0, 'Image height cannot be divided by num_strides'
         features_G = self.avgpool(resnet_features)
+        features_G = self.dropout(features_G)
 
         # 1x1 conv---------------------------------------------------------------------------------
         # [N, C=256, H=S, W=1]
-        if self.share_conv:
-            features_H = self.local_conv(features_G)
-            features_H = [features_H[:, :, i, :] for i in range(self.num_stripes)]
-        else:
-            features_H = []
-            for i in range(self.num_stripes):
-                stripe_features_H = self.local_conv_list[i](features_G[:, :, i:i+1, :])
-                features_H.append(stripe_features_H)
+        features_H = []
+        for i in range(self.num_stripes):
+            stripe_features_H = self.local_conv_list[i](features_G[:, :, i:i+1, :])
+            features_H.append(stripe_features_H)
 
         # Return the features_H***********************************************************************
         if not self.training:
@@ -93,11 +79,10 @@ class PCBModel(nn.Module):
         return logits_list
 
 
-def PCB_p6(num_classes, share_conv, num_stripes=6, **kwargs):
+def PCB_p6(num_classes, num_stripes=6, **kwargs):
     assert num_stripes == 6, "num_stripes not eq 6"
     return PCBModel(
         num_classes=num_classes,
         num_stripes=num_stripes,
-        share_conv=share_conv,
         **kwargs
     )
