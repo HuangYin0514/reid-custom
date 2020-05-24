@@ -56,7 +56,7 @@ class PCBModel(nn.Module):
         # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]
         features_G = self.avgpool(resnet_features)
-        features_G = self.dropout(features_G)
+        # features_G = self.dropout(features_G)
 
         # 1x1 conv---------------------------------------------------------------------------------
         # [N, C=256, H=S, W=1]
