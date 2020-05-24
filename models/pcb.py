@@ -29,7 +29,7 @@ class PCBModel(nn.Module):
 
         # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.num_stripes, 1))
-        self.dropout = nn.Dropout(p=0.5)
+        # self.dropout = nn.Dropout(p=0.5)
 
         # local_conv--------------------------------------------------------------------
         self.local_conv_list = nn.ModuleList()
