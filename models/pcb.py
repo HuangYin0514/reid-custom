@@ -64,7 +64,7 @@ class PCBModel(nn.Module):
         # [N, C=256, H=S, W=1]
         features_H = []
         for i in range(self.num_stripes):
-            stripe_features_H = self.local_conv_list[i](features_G[:, :, i:i+1, :])
+            stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
         # Return the features_H***********************************************************************
