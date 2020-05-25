@@ -70,12 +70,13 @@ if __name__ == "__main__":
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr, 'lr_mult': 0.1},
-                    {'params': new_params, 'lr': args.lr, 'lr_mult': 1.0}]
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
+                    {'params': new_params, 'lr': args.lr}]
     optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
-    scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
+    # scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
     # save_dir_path-----------------------------------------------------------------------------------
     save_dir_path = os.path.join(args.save_path, args.dataset)

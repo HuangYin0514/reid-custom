@@ -35,17 +35,19 @@ class PCBModel(nn.Module):
         self.local_conv_list = nn.ModuleList()
         for _ in range(num_stripes):
             local_conv = nn.Sequential(
-                nn.Conv2d(2048, 256, kernel_size=1, bias=False),
-                nn.BatchNorm2d(256),
+                nn.Conv1d(2048, 256, kernel_size=1),
+                nn.BatchNorm1d(256),
                 nn.ReLU(inplace=True))
-            local_conv.apply(torchtool.weights_init_kaiming)
+            # local_conv.apply(torchtool.weights_init_kaiming)
             self.local_conv_list.append(local_conv)
 
         # Classifier for each stripe--------------------------------------------------------------------------
         self.fc_list = nn.ModuleList()
         for _ in range(num_stripes):
             fc = nn.Linear(256, num_classes)
-            fc.apply(torchtool.weights_init_classifier)
+            nn.init.normal_(fc.weight, std=0.001)
+            nn.init.constant_(fc.bias, 0)
+            # fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
     def forward(self, x):
