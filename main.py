@@ -7,6 +7,7 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
+from scheduler import build_scheduler
 from train import train
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
@@ -39,7 +40,6 @@ parser.add_argument('--fixbase_epoch', type=int, default=0)
 
 # Optimizer parameters-------------------------------------------------------------
 parser.add_argument('--lr', type=float, default=0.1)
-parser.add_argument('--lr_base', type=float, default=0.01)
 
 
 # Learning rate parameters-------------------------------------------------------------
@@ -70,12 +70,12 @@ if __name__ == "__main__":
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr_base},
-                    {'params': new_params, 'lr': args.lr}]
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr, 'lr_mult': 0.1},
+                    {'params': new_params, 'lr': args.lr, 'lr_mult': 1.0}]
     optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.decay_every, gamma=args.gamma)
+    scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
 
     # save_dir_path-----------------------------------------------------------------------------------
     save_dir_path = os.path.join(args.save_path, args.dataset)
