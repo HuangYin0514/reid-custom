@@ -22,18 +22,9 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(
-            planes,
-            planes,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            bias=False
-        )
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(
-            planes, planes * self.expansion, kernel_size=1, bias=False
-        )
+        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
@@ -73,24 +64,23 @@ class PCBModel(nn.Module):
                  ** kwargs):
 
         super(PCBModel, self).__init__()
-        #setting of parameters--------------------------------------------------------------------------
+        # setting of parameters--------------------------------------------------------------------------
         self.parts = parts
-        self.feature_dim = 512 * block.expansion
-        self.inplanes = 64
 
         # backbone network--------------------------------------------------------------------------
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
-        
+        self.layer1 = self._make_layer(block, 64, 64, layers[0])
+        self.layer2 = self._make_layer(block, 256, 128, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 512, 256, layers[2], stride=2)
+        self.layer4 = self._make_layer(block, 1024, 512, layers[3], stride=1)
+
         self.backbone = nn.Sequential(
             self.conv1, self.bn1, self.relu, self.maxpool,
             self.layer1, self.layer2, self.layer3, self.layer4)
+
         ####################################################################################
 
         # avgpool--------------------------------------------------------------------------
@@ -114,34 +104,31 @@ class PCBModel(nn.Module):
             fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
-    def _make_layer(self, block, planes, blocks, stride=1):
+    # --------------------------------------------------------------------------
+    def _make_layer(self, block, inplanes, planes, num_layers, stride=1):
         downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
+        if stride != 1 or inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(
-                    self.inplanes,
-                    planes * block.expansion,
-                    kernel_size=1,
-                    stride=stride,
-                    bias=False
-                ),
+                nn.Conv2d(inplanes, planes * block.expansion, kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample))
-        self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
+        layers.append(block(inplanes, planes, stride, downsample))
+        for i in range(1, num_layers):
+            layers.append(block(planes * block.expansion, planes))
         return nn.Sequential(*layers)
 
+    # --------------------------------------------------------------------------
     def featuremaps(self, x):
         x = self.backbone(x)
         return x
 
+    # --------------------------------------------------------------------------
     def forward(self, x):
         # backbone------------------------------------------------------------------------------------
         # tensor T
         resnet_features = self.featuremaps(x)
+        return resnet_features
 
         # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]
