@@ -128,7 +128,6 @@ class PCBModel(nn.Module):
         # backbone------------------------------------------------------------------------------------
         # tensor T
         resnet_features = self.featuremaps(x)
-        return resnet_features
 
         # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]
