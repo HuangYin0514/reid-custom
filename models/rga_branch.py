@@ -4,7 +4,7 @@ from torch.nn import functional as F
 from torchvision import models
 from utils import torchtool
 import torch.utils.model_zoo as model_zoo
-
+from .rga_module import RGA_Module
 
 MODEL_URLS = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -98,7 +98,7 @@ class RGA_Branch(nn.Module):
         super(RGA_Branch, self).__init__()
         self.in_channels = 64
 
-        # backbone network--------------------------------------------------------------------------
+        # backbone network---------------------------------------------------------------------------------------
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -112,7 +112,7 @@ class RGA_Branch(nn.Module):
             self.conv1, self.bn1, self.relu, self.maxpool,
             self.layer1, self.layer2, self.layer3, self.layer4)
 
-        # Load the pre-trained model weights----------------------------------------------------------
+        # Load the pre-trained model weights---------------------------------
         if pretrained:
             self.load_specific_param(self.conv1.state_dict(), 'conv1', model_url)
             self.load_specific_param(self.bn1.state_dict(), 'bn1', model_url)
@@ -120,6 +120,18 @@ class RGA_Branch(nn.Module):
             self.load_partial_param(self.layer2.state_dict(), 2, model_url)
             self.load_partial_param(self.layer3.state_dict(), 3, model_url)
             self.load_partial_param(self.layer4.state_dict(), 4, model_url)
+
+        # RGA Modules---------------------------------------------------------------------------------------
+        self.rga_att1 = RGA_Module(256, (height//4)*(width//4), use_spatial=spa_on, use_channel=cha_on,
+                                   cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
+        self.rga_att2 = RGA_Module(512, (height//8)*(width//8), use_spatial=spa_on, use_channel=cha_on,
+                                   cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
+        self.rga_att3 = RGA_Module(1024, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
+                                   cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
+        self.rga_att4 = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
+                                   cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
+
+
 
     def _make_layer(self, block, channels, blocks, stride=1):
         downsample = None
@@ -159,9 +171,16 @@ class RGA_Branch(nn.Module):
         x = self.relu(x)
         x = self.maxpool(x)
         x = self.layer1(x)
+        x = self.rga_att1(x)
+
         x = self.layer2(x)
+        x = self.rga_att2(x)
+        
         x = self.layer3(x)
+        x = self.rga_att3(x)
+
         x = self.layer4(x)
+        x = self.rga_att4(x)
 
         return x
 

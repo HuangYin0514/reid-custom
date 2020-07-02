@@ -89,54 +89,32 @@ class ResNet50_RGA_Model(nn.Module):
                                    s_ratio=scale, c_ratio=scale, d_ratio=d_scale, model_path=model_path)
 
         ####################################################################################
-        parts = 6
-        # avgpool--------------------------------------------------------------------------
-        self.avgpool = nn.AdaptiveAvgPool2d((parts, 1))
+        self.feat_bn = nn.BatchNorm1d(self.num_feat)
+        self.feat_bn.bias.requires_grad_(False)
+        if self.dropout > 0:
+            self.drop = nn.Dropout(self.dropout)
+        self.cls = nn.Linear(self.num_feat, self.num_classes, bias=False)
 
-        # local_conv--------------------------------------------------------------------
-        self.local_conv_list = nn.ModuleList()
-        for _ in range(parts):
-            local_conv = nn.Sequential(
-                nn.Conv1d(2048, 256, kernel_size=1),
-                nn.BatchNorm1d(256),
-                nn.ReLU(inplace=True))
-            local_conv.apply(torchtool.weights_init_kaiming)
-            self.local_conv_list.append(local_conv)
+        self.feat_bn.apply(weights_init_kaiming)
+        self.cls.apply(weights_init_classifier)
 
-        # Classifier for each stripe--------------------------------------------------------------------------
-        self.fc_list = nn.ModuleList()
-        for _ in range(parts):
-            fc = nn.Linear(256, num_classes)
-            fc.apply(torchtool.weights_init_classifier)
-            self.fc_list.append(fc)
+    def forward(self, inputs):
+        # im_input = inputs[0]
 
-    def forward(self, x):
+        feat_ = self.backbone(inputs)
+        
+        feat_ = F.avg_pool2d(feat_, feat_.size()[2:]).view(feat_.size(0), -1)
+        feat = self.feat_bn(feat_)
+        if self.dropout > 0:
+            feat = self.drop(feat)
+        if self.training and self.num_classes is not None:
+            cls_feat = self.cls(feat)
+        
+        if self.training:
+            return (feat_, feat, cls_feat)
+        else:
+            return (feat_, feat)
 
-        parts = 6
-
-        # backbone (tensor T)------------------------------------------------------------------------------------
-        resnet_features = self.backbone(x)
-
-        # tensor g  （[N, C, H, W]）---------------------------------------------------------------------------------
-        features_G = self.avgpool(resnet_features)
-
-        # 1x1 conv （[N, C=256, H=S, W=1]）---------------------------------------------------------------------------------
-        features_H = []
-        for i in range(parts):
-            stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
-            features_H.append(stripe_features_H)
-
-        # Return the features_H***********************************************************************
-        if not self.training:
-            v_g = torch.cat(features_H, dim=2)
-            v_g = F.normalize(v_g, p=2, dim=1)
-            return v_g.view(v_g.size(0), -1)
-
-        # fc （[N, C=num_classes]）---------------------------------------------------------------------------------
-        batch_size = x.size(0)
-        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(parts)]
-
-        return logits_list
 
 
 def resnet50_rga_model(*args, **kwargs):
