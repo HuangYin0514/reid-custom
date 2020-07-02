@@ -107,6 +107,11 @@ class RGA(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=last_stride)
 
+        # Load the pre-trained model weights----------------------------------------------------------
+        if pretrained:
+            self.load_specific_param(self.conv1.state_dict(), 'conv1', model_path)
+            self.load_specific_param(self.bn1.state_dict(), 'bn1', model_path)
+
     def _make_layer(self, block, channels, blocks, stride=1):
         downsample = None
         if stride != 1 or self.in_channels != channels * block.expansion:
@@ -120,6 +125,20 @@ class RGA(nn.Module):
         for i in range(1, blocks):
             layers.append(block(self.in_channels, channels))
         return nn.Sequential(*layers)
+
+    def load_partial_param(self, state_dict, model_index, model_path):
+        param_dict = torch.load(model_path)
+        for i in state_dict:
+            key = 'layer{}.'.format(model_index)+i
+            state_dict[i].copy_(param_dict[key])
+        del param_dict
+
+    def load_specific_param(self, state_dict, param_name, model_path):
+        param_dict = torch.load(model_path)
+        for i in state_dict:
+            key = param_name + '.' + i
+            state_dict[i].copy_(param_dict[key])
+        del param_dict
 
     def forward(self, x):
         x = self.conv1(x)

@@ -1,6 +1,4 @@
-import sys
-sys.path.append('/home/hy/vscode/reid-custom')
-print(sys.path)
+
 from models import build_model
 import torch
 from torchsummary import summary

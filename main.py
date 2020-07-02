@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr},
                     {'params': new_params, 'lr': args.lr}]
     optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
