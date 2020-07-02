@@ -111,17 +111,14 @@ class RGA(nn.Module):
         downsample = None
         if stride != 1 or self.in_channels != channels * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.in_channels, channels * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(self.in_channels, channels * block.expansion, kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(channels * block.expansion),
             )
-
         layers = []
         layers.append(block(self.in_channels, channels, stride, downsample))
         self.in_channels = channels * block.expansion
         for i in range(1, blocks):
             layers.append(block(self.in_channels, channels))
-
         return nn.Sequential(*layers)
 
     def forward(self, x):
