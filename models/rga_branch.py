@@ -6,7 +6,7 @@ from utils import torchtool
 import torch.utils.model_zoo as model_zoo
 
 
-model_urls = {
+MODEL_URLS = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
     'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
@@ -93,7 +93,7 @@ class RGA_Branch(nn.Module):
                  d_ratio=8,
                  height=256,
                  width=128,
-                 model_url=model_urls['resnet50'],
+                 model_url=MODEL_URLS['resnet50'],
                  **kwargs):
         super(RGA_Branch, self).__init__()
         self.in_channels = 64
@@ -121,7 +121,6 @@ class RGA_Branch(nn.Module):
             self.load_partial_param(self.layer3.state_dict(), 3, model_url)
             self.load_partial_param(self.layer4.state_dict(), 4, model_url)
 
-
     def _make_layer(self, block, channels, blocks, stride=1):
         downsample = None
         if stride != 1 or self.in_channels != channels * block.expansion:
@@ -142,6 +141,7 @@ class RGA_Branch(nn.Module):
             key = 'layer{}.'.format(model_index)+i
             if key in param_dict:
                 state_dict[i].copy_(param_dict[key])
+        print('loaded param layer{}'.format(model_index))
         del param_dict
 
     def load_specific_param(self, state_dict, param_name, model_url):
@@ -150,6 +150,7 @@ class RGA_Branch(nn.Module):
             key = param_name + '.' + i
             if key in param_dict:
                 state_dict[i].copy_(param_dict[key])
+        print('loaded param {}'.format(param_name))
         del param_dict
 
     def forward(self, x):
@@ -165,7 +166,7 @@ class RGA_Branch(nn.Module):
         return x
 
 
-def rga_branch( pretrained=True, **kwargs):
+def rga_branch(pretrained=True, **kwargs):
 
     model = RGA_Branch(
         pretrained=pretrained,
