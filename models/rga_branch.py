@@ -80,9 +80,8 @@ class Bottleneck(nn.Module):
         return out
 
 
-class RGA(nn.Module):
+class RGA_Branch(nn.Module):
     def __init__(self,
-                 num_classes,
                  pretrained=True,
                  last_stride=1,
                  block=Bottleneck,
@@ -94,9 +93,9 @@ class RGA(nn.Module):
                  d_ratio=8,
                  height=256,
                  width=128,
-                 model_path=model_urls['resnet50'],
+                 model_url=model_urls['resnet50'],
                  **kwargs):
-        super(RGA, self).__init__()
+        super(RGA_Branch, self).__init__()
         self.in_channels = 64
 
         # backbone network--------------------------------------------------------------------------
@@ -115,36 +114,13 @@ class RGA(nn.Module):
 
         # Load the pre-trained model weights----------------------------------------------------------
         if pretrained:
-            self.load_specific_param(self.conv1.state_dict(), 'conv1', model_path)
-            self.load_specific_param(self.bn1.state_dict(), 'bn1', model_path)
-            self.load_partial_param(self.layer1.state_dict(), 1, model_path)
-            self.load_partial_param(self.layer2.state_dict(), 2, model_path)
-            self.load_partial_param(self.layer3.state_dict(), 3, model_path)
-            self.load_partial_param(self.layer4.state_dict(), 4, model_path)
+            self.load_specific_param(self.conv1.state_dict(), 'conv1', model_url)
+            self.load_specific_param(self.bn1.state_dict(), 'bn1', model_url)
+            self.load_partial_param(self.layer1.state_dict(), 1, model_url)
+            self.load_partial_param(self.layer2.state_dict(), 2, model_url)
+            self.load_partial_param(self.layer3.state_dict(), 3, model_url)
+            self.load_partial_param(self.layer4.state_dict(), 4, model_url)
 
-        ####################################################################################
-
-        # avgpool--------------------------------------------------------------------------
-        parts = 6
-        self.avgpool = nn.AdaptiveAvgPool2d((parts, 1))
-        # self.dropout = nn.Dropout(p=0.5)
-
-        # local_conv--------------------------------------------------------------------
-        self.local_conv_list = nn.ModuleList()
-        for _ in range(parts):
-            local_conv = nn.Sequential(
-                nn.Conv1d(2048, 256, kernel_size=1),
-                nn.BatchNorm1d(256),
-                nn.ReLU(inplace=True))
-            local_conv.apply(torchtool.weights_init_kaiming)
-            self.local_conv_list.append(local_conv)
-
-        # Classifier for each stripe--------------------------------------------------------------------------
-        self.fc_list = nn.ModuleList()
-        for _ in range(parts):
-            fc = nn.Linear(256, num_classes)
-            fc.apply(torchtool.weights_init_classifier)
-            self.fc_list.append(fc)
 
     def _make_layer(self, block, channels, blocks, stride=1):
         downsample = None
@@ -186,37 +162,12 @@ class RGA(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
 
-        # tensor g---------------------------------------------------------------------------------
-        # [N, C, H, W]
-        features_G = self.avgpool(x)
-        # features_G = self.dropout(features_G)
-
-        # 1x1 conv---------------------------------------------------------------------------------
-        # [N, C=256, H=S, W=1]
-        features_H = []
-        parts = 6
-        for i in range(parts):
-            stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
-            features_H.append(stripe_features_H)
-
-        # Return the features_H***********************************************************************
-        if not self.training:
-            v_g = torch.cat(features_H, dim=2)
-            v_g = F.normalize(v_g, p=2, dim=1)
-            return v_g.view(v_g.size(0), -1)
-
-        # fc---------------------------------------------------------------------------------
-        # [N, C=num_classes]
-        batch_size = x.size(0)
-        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(parts)]
-
-        return logits_list
+        return x
 
 
-def rga_init(num_classes, pretrained=True, **kwargs):
+def rga_branch( pretrained=True, **kwargs):
 
-    model = RGA(
-        num_classes=num_classes,
+    model = RGA_Branch(
         pretrained=pretrained,
         **kwargs)
 

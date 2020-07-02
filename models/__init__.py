@@ -5,7 +5,7 @@ from .pcb import PCB_p6
 from .resnet import Res_net
 from .resnet_att import Resnet_self_attention
 from .pcb_init import PCB_init
-from .rga import rga_init
+from .rga_branch import rga_branch
 
 
 __model_factory = {
@@ -13,7 +13,7 @@ __model_factory = {
     'Res_net': Res_net,
     'Resnet_self_attention': Resnet_self_attention,
     'PCB_init': PCB_init,
-    'rga_init': rga_init
+    'rga_branch': rga_branch
 }
 
 
