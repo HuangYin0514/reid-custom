@@ -126,18 +126,20 @@ class RGA(nn.Module):
             layers.append(block(self.in_channels, channels))
         return nn.Sequential(*layers)
 
-    def load_partial_param(self, state_dict, model_index, model_path):
-        param_dict = torch.load(model_path)
+    def load_partial_param(self, state_dict, model_index, model_url):
+        param_dict = model_zoo.load_url(model_url)
         for i in state_dict:
             key = 'layer{}.'.format(model_index)+i
-            state_dict[i].copy_(param_dict[key])
+            if key in param_dict:
+                state_dict[i].copy_(param_dict[key])
         del param_dict
 
-    def load_specific_param(self, state_dict, param_name, model_path):
-        param_dict = torch.load(model_path)
+    def load_specific_param(self, state_dict, param_name, model_url):
+        param_dict = model_zoo.load_url(model_url)
         for i in state_dict:
             key = param_name + '.' + i
-            state_dict[i].copy_(param_dict[key])
+            if key in param_dict:
+                state_dict[i].copy_(param_dict[key])
         del param_dict
 
     def forward(self, x):
