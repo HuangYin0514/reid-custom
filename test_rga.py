@@ -5,7 +5,7 @@ from torchsummary import summary
 
 if __name__ == "__main__":
 
-    model = build_model('rga_init')
+    model = build_model('rga_init',num_classes=100)
 
     model.eval()
     inp1 = torch.randn(3, 3, 384, 128)
