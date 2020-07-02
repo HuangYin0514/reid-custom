@@ -94,7 +94,8 @@ class RGA(nn.Module):
                  d_ratio=8,
                  height=256,
                  width=128,
-                 model_path=model_urls['resnet50']):
+                 model_path=model_urls['resnet50'],
+                 **kwargs):
         super(RGA, self).__init__()
         self.in_channels = 64
 
