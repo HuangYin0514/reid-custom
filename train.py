@@ -51,7 +51,6 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             inputs = inputs.to(device)
             labels = labels.to(device)
 
-            
             # with torch.set_grad_enabled(True):-------------
             outputs = model(inputs)
             # Sum up the stripe softmax loss-------------------
@@ -60,6 +59,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
                 stripe_loss = criterion(logits, labels)
                 loss += stripe_loss
             loss /= 6
+            
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
