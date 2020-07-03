@@ -18,7 +18,7 @@ kaggle name = reid-custom
 |                           method                           | rank@1 |  Map   | kaggle version  |
 | :--------------------------------------------------------: | :----: | :----: | :-------------: |
 |              [pcb](project_result/pcb.ipynb)               | 57.40% | 52.29% | reid-custom-v60 |
-|          [pcb](project_result/pcb_same_lr.ipynb)           | 45.20% | 40.13% | reid-custom-v76 |
+|         [pcb_lr](project_result/pcb_same_lr.ipynb)         | 45.20% | 40.13% | reid-custom-v76 |
 | [pcb_sga_s_img(256x128)](project_result/pcb_same_lr.ipynb) | 48.90% | 45.72% | reid-custom-v82 |
 | [pcb_img(256x128)](project_result/pcb_img(256x128).ipynb)  | 59.00% | 54.28% | reid-custom-v83 |
 
