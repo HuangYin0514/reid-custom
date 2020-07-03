@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--dataset', type=str, default='Occluded_REID')
     parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Occluded_REID')
-    parser.add_argument('--height', type=int, default=384, help='height of the input image')
+    parser.add_argument('--height', type=int, default=256, help='height of the input image')
     parser.add_argument('--width', type=int, default=128, help='width of the input image')
 
     parser.add_argument('--batch_size', default=3, type=int, help='batchsize')
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=1, share_conv=args.share_conv)
+    model = build_model(args.experiment, num_classes=1, height=args.height, width=args.width)
     model = util.load_network(model, args.checkpoint, args.which_epoch)
     model = model.to(device)
 
