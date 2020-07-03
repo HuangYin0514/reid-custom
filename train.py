@@ -64,6 +64,8 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             optimizer.step()
 
             running_loss += loss.item() * inputs.size(0)
+
+            torch.cuda.empty_cache()
         # ===================one epoch end================
 
         epoch_loss = running_loss / len(dataloader.dataset)
@@ -89,6 +91,8 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             if epoch + 1 != num_epochs:
                 util.save_network(model, save_dir_path, str(epoch + 1))
         logger.info('-' * 10)
+
+        
 
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 
