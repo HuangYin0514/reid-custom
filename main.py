@@ -10,6 +10,7 @@ from models import build_model
 from scheduler import build_scheduler, LRScheduler
 from train import train
 from loss import loss_set
+import numpy as np
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -27,7 +28,9 @@ parser.add_argument('--dataset', type=str, default='Market1501')
 parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
 parser.add_argument('--height', type=int, default=256, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
-parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
+parser.add_argument('--batch_size', default=16, type=int, help='batch_size')
+parser.add_argument('--num-instances', type=int, default=4,
+                    help="each minibatch consist of (batch_size // num_instances) identities, and each identity has num_instances instances, default: 4")
 
 # Model parameters-------------------------------------------------------------
 parser.add_argument('--share_conv', default=False, action='store_true')
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    criterion_cls = loss_set.CrossEntropyLabelSmoothLoss(dataset.num_train_pids).cuda()
+    criterion_cls = loss_set.CrossEntropyLabelSmoothLoss(train_dataloader.dataset.num_train_pids).to(device)
     criterion_tri = loss_set.TripletHardLoss(margin=0.3)
     criterion = [criterion_cls, criterion_tri]
 
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.SGD(param_groups,  lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
-    lr_scheduler = LRScheduler(base_lr=0.0008, step=[80, 120, 160, 200, 240, 280, 320, 360],
+    scheduler = LRScheduler.LRScheduler(base_lr=0.0008, step=[80, 120, 160, 200, 240, 280, 320, 360],
                                factor=0.5, warmup_epoch=20,
                                warmup_begin_lr=0.000008)
 
