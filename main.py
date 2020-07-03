@@ -69,6 +69,7 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
 
     # optimizer-----------------------------------------------------------------------------------
+    
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
     param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
