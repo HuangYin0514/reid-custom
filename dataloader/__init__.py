@@ -3,7 +3,6 @@ import torch
 from torchvision import datasets, transforms
 from .occluded_reid import Occluded_REID
 from .market1501 import Market1501
-from .sampler import RandomIdentitySampler
 
 __dataset_factory = {
     'Occluded_REID': Occluded_REID,
@@ -30,12 +29,8 @@ def getDataLoader(dataset, batch_size, dataset_path, part, args, shuffle=True, a
     data_transform = transforms.Compose(transform_list)
 
     # dataset ------------------------------------------------------------
-    if part in ['train']:
-        image_dataset = __dataset_factory[dataset](root=dataset_path, part=part, transform=data_transform)
-        dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
-    if path in ['query', 'gallery']:
-        image_dataset = __dataset_factory[dataset](root=dataset_path, part=part, transform=data_transform)
-        dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
+    image_dataset = __dataset_factory[dataset](root=dataset_path, part=part, transform=data_transform)
+    dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
 
     return dataloader
 

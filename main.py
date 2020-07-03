@@ -7,10 +7,8 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
-from scheduler import build_scheduler, LRScheduler
+from scheduler import build_scheduler
 from train import train
-from loss import loss_set
-import numpy as np
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -19,18 +17,14 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='resnet50_rga_model')
-parser.add_argument('--seed', type=int, default=16)
-
+parser.add_argument('--experiment', type=str, default='PCB_p6')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
 parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
-parser.add_argument('--height', type=int, default=256, help='height of the input image')
+parser.add_argument('--height', type=int, default=384, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
-parser.add_argument('--batch_size', default=16, type=int, help='batch_size')
-parser.add_argument('--num-instances', type=int, default=4,
-                    help="each minibatch consist of (batch_size // num_instances) identities, and each identity has num_instances instances, default: 4")
+parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
 
 # Model parameters-------------------------------------------------------------
 parser.add_argument('--share_conv', default=False, action='store_true')
@@ -39,7 +33,7 @@ parser.add_argument('--open_layers', nargs='+', default=[])
 
 
 # Train parameters-------------------------------------------------------------
-parser.add_argument('--epochs', type=int, default=1)
+parser.add_argument('--epochs', type=int, default=60)
 parser.add_argument('--test_every', type=int, default=1)
 parser.add_argument('--fixbase_epoch', type=int, default=0)
 
@@ -60,33 +54,29 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Fix random seed---------------------------------------------------------------------------
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
+    torch.manual_seed(1)
+    torch.cuda.manual_seed_all(1)
 
     # dataset------------------------------------------------------------------------------------
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids)
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, share_conv=args.share_conv)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    criterion_cls = loss_set.CrossEntropyLabelSmoothLoss(train_dataloader.dataset.num_train_pids).to(device)
-    criterion_tri = loss_set.TripletHardLoss(margin=0.3)
-    criterion = [criterion_cls, criterion_tri]
+    criterion = nn.CrossEntropyLoss()
 
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr_mult': 1.0},
-                    {'params': new_params, 'lr_mult': 1.0}]
-    optimizer = torch.optim.SGD(param_groups,  lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
+                    {'params': new_params, 'lr': args.lr}]
+    optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
-    scheduler = LRScheduler.LRScheduler(base_lr=0.0008, step=[80, 120, 160, 200, 240, 280, 320, 360],
-                               factor=0.5, warmup_epoch=20,
-                               warmup_begin_lr=0.000008)
+    # scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
     # save_dir_path-----------------------------------------------------------------------------------
     save_dir_path = os.path.join(args.save_path, args.dataset)

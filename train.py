@@ -31,11 +31,10 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
 
+
         model.train()
-        lr = scheduler.update(epoch)
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
-        print('[Info] Epoch [{}] learning rate update to {:.3e}'.format(epoch, lr))
+        scheduler.step(epoch)
+
         # # train open_specified_layers--------------------------------------------------
         # if (epoch+1) <= args.fixbase_epoch and args.open_layers is not None:
         #     logger.info('* Only train {} (epoch: {}/{})'.format(args.open_layers, epoch+1, fixbase_epoch))
@@ -52,15 +51,15 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             inputs = inputs.to(device)
             labels = labels.to(device)
 
+            optimizer.zero_grad()
             # with torch.set_grad_enabled(True):-------------
             outputs = model(inputs)
             # Sum up the stripe softmax loss-------------------
             loss = 0
-            loss_cls = criterion[0](outputs[2], labels)
-            loss_tri = criterion[1](outputs[0], labels)
-            loss += (loss_cls+loss_tri)
-
-            optimizer.zero_grad()
+            for logits in outputs:
+                stripe_loss = criterion(logits, labels)
+                loss += stripe_loss
+            loss /= 6
             loss.backward()
             optimizer.step()
 
@@ -72,7 +71,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
         # time_remaining------------------------------------------
         time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)
-        logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600, time_remaining/60 % 60))
+        logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600,time_remaining/60%60))
 
         # Save result to logger---------------------------------
         logger.x_epoch_loss.append(epoch + 1)
