@@ -57,7 +57,7 @@ class ResNet50_RGA_Model(nn.Module):
                  dropout=0,
                  num_classes=0,
                  last_stride=1,
-                 branch_name='rgas',
+                 branch_name='rgasc',
                  scale=8,
                  d_scale=8,
                  model_path=MODEL_URLS['resnet50'],
