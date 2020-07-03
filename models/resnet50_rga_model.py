@@ -52,7 +52,7 @@ class ResNet50_RGA_Model(nn.Module):
     def __init__(self,
                  pretrained=True,
                  num_feat=2048,
-                 height=256,
+                 height=384,
                  width=128,
                  dropout=0,
                  num_classes=0,
@@ -111,8 +111,8 @@ class ResNet50_RGA_Model(nn.Module):
             fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
-    def forward(self, inputs):
-        resnet_features = self.backbone(inputs)
+    def forward(self, x):
+        resnet_features = self.backbone(x)
         
          # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]

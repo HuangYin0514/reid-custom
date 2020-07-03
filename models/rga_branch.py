@@ -91,7 +91,7 @@ class RGA_Branch(nn.Module):
                  s_ratio=8,
                  c_ratio=8,
                  d_ratio=8,
-                 height=256,
+                 height=384,
                  width=128,
                  model_url=MODEL_URLS['resnet50'],
                  **kwargs):
