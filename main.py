@@ -25,6 +25,7 @@ parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-cu
 parser.add_argument('--height', type=int, default=384, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
+parser.add_argument('--test_batch_size', default=128, type=int, help='batch_size')
 
 # Model parameters-------------------------------------------------------------
 parser.add_argument('--share_conv', default=False, action='store_true')
