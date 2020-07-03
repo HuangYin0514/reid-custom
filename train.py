@@ -14,6 +14,8 @@ from test import test
 from utils import torchtool
 
 
+torch.backends.cudnn.enabled = True
+
 # ---------------------- Train function ----------------------
 def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device, save_dir_path, args):
     '''
@@ -59,7 +61,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
                 stripe_loss = criterion(logits, labels)
                 loss += stripe_loss
             loss /= 6
-            
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
