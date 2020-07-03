@@ -62,7 +62,7 @@ if __name__ == "__main__":
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, height=args.height,width=args.width)
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, height=args.height, width=args.width)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
     param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
                     {'params': new_params, 'lr': args.lr}]
-    optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
+    optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
     # scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
