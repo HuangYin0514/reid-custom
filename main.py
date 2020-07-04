@@ -3,12 +3,10 @@ import argparse
 import os
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
-from scheduler import build_scheduler
 from train import train
+from loss.crossentropy_labelsmooth import CrossEntropyLabelSmoothLoss
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -66,7 +64,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    criterion = nn.CrossEntropyLoss()
+    criterion = CrossEntropyLabelSmoothLoss(num_classes=train_dataloader.dataset.num_train_pids)
 
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
