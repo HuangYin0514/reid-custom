@@ -69,10 +69,18 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
 
     # optimizer-----------------------------------------------------------------------------------
-    
-    base_param_ids = set(map(id, model.backbone.parameters()))
+    # select base layers for traning----------------------------------
+    base_layers = [model.backbone.conv1, model.backbone.bn1,
+                   model.backbone.layer1, model.backbone.layer2,
+                   model.backbone.layer3, model.backbone.layer4]
+    base_param_ids = set()
+    base_param = []
+    for i in base_layers:
+        base_param_ids = base_param_ids | set(map(id, i.parameters()))
+        base_param+list(i.parameters())
+    # base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
+    param_groups = [{'params': base_param, 'lr': args.lr/10},
                     {'params': new_params, 'lr': args.lr}]
     optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
