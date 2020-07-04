@@ -64,7 +64,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    criterion = CrossEntropyLabelSmoothLoss(num_classes=train_dataloader.dataset.num_train_pids)
+    criterion = nn.CrossEntropyLoss()
 
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
