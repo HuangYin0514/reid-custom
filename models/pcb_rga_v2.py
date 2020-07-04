@@ -211,7 +211,7 @@ class PCB_RGA_V2(nn.Module):
         s_ratio = 8
         c_ratio = 8
         d_ratio = 8
-        self.rga_att4 = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
+        self.rga_att = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
                                    cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
 
         self.parts = 6
@@ -238,11 +238,12 @@ class PCB_RGA_V2(nn.Module):
 
     def forward(self, x):
         resnet_features = self.backbone(x)
+        #att--------------------------------------------------------------------
+        x=self.rga_att(resnet_features)
 
         # tensor g---------------------------------------------------------------------------------
         # [N, C, H, W]
-        features_G = self.avgpool(resnet_features)
-        # features_G = self.dropout(features_G)
+        features_G = self.avgpool(x)
 
         # 1x1 conv---------------------------------------------------------------------------------
         # [N, C=256, H=S, W=1]
