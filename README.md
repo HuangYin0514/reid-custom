@@ -11,6 +11,8 @@ kaggle name = reid-custom
 |               [pcb_img(256x128)](project_result/pcb_img(256x128).ipynb)               | 87.89% | 72.34% | reid-custom-v83 |
 |              [pcb_sga_s_lr(layers)](project_result/pcb_lr(layers).ipynb)              | 50.36% | 29.62% | reid-custom-v87 |
 | [pcb_img(256x128)_label_smooths](project_result/pcb_img(256x128)_label_smooths.ipynb) | 85.78% | 68.20% | reid-custom-v94 |
+|        [pcb_img(256x128)_sga_v2](project_result/pcb_img(256x128)_sga_v2.ipynb)        | 88.09% | 72.52% | reid-custom-v97 |
+
 
 
 
@@ -26,5 +28,6 @@ kaggle name = reid-custom
 |               [pcb_img(256x128)](project_result/pcb_img(256x128).ipynb)               | 59.00% | 54.28% | reid-custom-v83 |
 |              [pcb_sga_s_lr(layers)](project_result/pcb_lr(layers).ipynb)              | 33.90% | 28.66% | reid-custom-v87 |
 | [pcb_img(256x128)_label_smooths](project_result/pcb_img(256x128)_label_smooths.ipynb) | 51.90% | 48.22% | reid-custom-v94 |
+|        [pcb_img(256x128)_sga_v2](project_result/pcb_img(256x128)_sga_v2.ipynb)        | 54.90% | 50.28% | reid-custom-v97 |
 
 
