@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 
 import torch.nn.functional as F
+
 from utils import util
 from dataloader import getDataLoader
 from models import build_model
@@ -56,6 +57,7 @@ def test(model, dataset, dataset_path, batch_size, device, args, normalize_featu
 
     print('Extracting features from gallery set ...')
     gf, g_pids, g_camids = [], [], []  # gallery features, gallery person IDs and gallery camera IDs
+    g_score = []
     for batch_idx, data in enumerate(gallery_dataloader):
         imgs, pids, camids = _parse_data_for_eval(data)
         imgs = imgs.to(device)

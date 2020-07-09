@@ -3,8 +3,11 @@ import argparse
 import os
 import torch
 import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
+from scheduler import build_scheduler
 from train import train
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
@@ -14,7 +17,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='PCB_init')
+parser.add_argument('--experiment', type=str, default='pcb')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
