@@ -4,7 +4,7 @@ from torchsummary import summary
 
 if __name__ == "__main__":
 
-    model = build_model('pcb_v2', height=256, width=128)
+    model = build_model('pcb_rga', num_classes=1000,height=256, width=128)
 
     # model.eval()
     inp1 = torch.randn(3, 3, 256, 128)
