@@ -1,9 +1,9 @@
-from .pcb import pcb
+from .pcb import pcb_p6
 from .rga_branch import rga_branch
 from .resnet50_rga_model import resnet50_rga_model
 
 __model_factory = {
-    'pcb': pcb,
+    'pcb_p6': pcb_p6,
     'rga_branch': rga_branch,
     'resnet50_rga_model': resnet50_rga_model
 }
