@@ -6,7 +6,7 @@ from utils import torchtool
 
 
 class PCBModel(nn.Module):
-    def __init__(self, num_classes, num_stripes, loss='softmax', ** kwargs):
+    def __init__(self, num_classes, num_stripes, share_conv, loss='softmax', ** kwargs):
 
         super(PCBModel, self).__init__()
         self.num_stripes = num_stripes
@@ -38,16 +38,16 @@ class PCBModel(nn.Module):
                 nn.Conv1d(2048, 256, kernel_size=1),
                 nn.BatchNorm1d(256),
                 nn.ReLU(inplace=True))
-            local_conv.apply(torchtool.weights_init_kaiming)
+            # local_conv.apply(torchtool.weights_init_kaiming)
             self.local_conv_list.append(local_conv)
 
         # Classifier for each stripe--------------------------------------------------------------------------
         self.fc_list = nn.ModuleList()
         for _ in range(num_stripes):
             fc = nn.Linear(256, num_classes)
-            # nn.init.normal_(fc.weight, std=0.001)
-            # nn.init.constant_(fc.bias, 0)
-            fc.apply(torchtool.weights_init_classifier)
+            nn.init.normal_(fc.weight, std=0.001)
+            nn.init.constant_(fc.bias, 0)
+            # fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
     def forward(self, x):
@@ -81,7 +81,7 @@ class PCBModel(nn.Module):
         return logits_list
 
 
-def pcb_p6(num_classes, num_stripes=6, **kwargs):
+def PCB_p6(num_classes, num_stripes=6, **kwargs):
     assert num_stripes == 6, "num_stripes not eq 6"
     return PCBModel(
         num_classes=num_classes,

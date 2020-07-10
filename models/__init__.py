@@ -1,20 +1,22 @@
-from .pcb import pcb_p6
-from .rga_branch import rga_branch
-from .resnet50_rga_model import resnet50_rga_model
-from .pcb_rga import pcb_rga
+
+import torch
+
+from .pcb import PCB_p6
+from .resnet import Res_net
+from .resnet_att import Resnet_self_attention
+
 
 __model_factory = {
-    'pcb_p6': pcb_p6,
-    'rga_branch': rga_branch,
-    'resnet50_rga_model': resnet50_rga_model,
-    'pcb_rga': pcb_rga
+    'PCB_p6': PCB_p6,
+    'Res_net': Res_net,
+    'Resnet_self_attention': Resnet_self_attention
 }
 
 
-def build_model(name, **kwargs):
+def build_model(name, num_classes, **kwargs):
     avai_models = list(__model_factory.keys())
     if name not in avai_models:
         raise KeyError(
             'Unknown model: {}. Must be one of {}'.format(name, avai_models)
         )
-    return __model_factory[name](**kwargs)
+    return __model_factory[name](num_classes=num_classes, **kwargs)

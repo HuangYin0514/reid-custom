@@ -14,8 +14,6 @@ from test import test
 from utils import torchtool
 
 
-torch.backends.cudnn.enabled = True
-
 # ---------------------- Train function ----------------------
 def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device, save_dir_path, args):
     '''
@@ -53,6 +51,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             inputs = inputs.to(device)
             labels = labels.to(device)
 
+            optimizer.zero_grad()
             # with torch.set_grad_enabled(True):-------------
             outputs = model(inputs)
             # Sum up the stripe softmax loss-------------------
@@ -60,15 +59,11 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             for logits in outputs:
                 stripe_loss = criterion(logits, labels)
                 loss += stripe_loss
-            loss /= 6
-
-            optimizer.zero_grad()
+            # loss /= 6
             loss.backward()
             optimizer.step()
 
             running_loss += loss.item() * inputs.size(0)
-
-            # torch.cuda.empty_cache()
         # ===================one epoch end================
 
         epoch_loss = running_loss / len(dataloader.dataset)
@@ -85,7 +80,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         # Testing / Validating-----------------------------------
         if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
             torch.cuda.empty_cache()
-            CMC, mAP = test(model, args.dataset, args.dataset_path, args.test_batch_size, device, args)
+            CMC, mAP = test(model, args.dataset, args.dataset_path, 512, device, args)
             logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
 
             logger.x_epoch_test.append(epoch + 1)
@@ -94,8 +89,6 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             if epoch + 1 != num_epochs:
                 util.save_network(model, save_dir_path, str(epoch + 1))
         logger.info('-' * 10)
-
-        
 
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 

@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='pcb_rga')
+parser.add_argument('--experiment', type=str, default='PCB_p6')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
@@ -25,7 +25,6 @@ parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-cu
 parser.add_argument('--height', type=int, default=384, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
-parser.add_argument('--test_batch_size', default=128, type=int, help='batch_size')
 
 # Model parameters-------------------------------------------------------------
 parser.add_argument('--share_conv', default=False, action='store_true')
@@ -55,25 +54,25 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Fix random seed---------------------------------------------------------------------------
-    # torch.manual_seed(1)
-    # torch.cuda.manual_seed_all(1)
+    torch.manual_seed(1)
+    torch.cuda.manual_seed_all(1)
 
     # dataset------------------------------------------------------------------------------------
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, height=args.height, width=args.width)
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, share_conv=args.share_conv)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
     criterion = nn.CrossEntropyLoss()
 
     # optimizer-----------------------------------------------------------------------------------
-    base_param_ids = set(map(id, model.resnet50_Moudule.parameters()))
+    base_param_ids = set(map(id, model.backbone.parameters()))
     new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
-    param_groups = [{'params': model.resnet50_Moudule.parameters(), 'lr': args.lr/10},
+    param_groups = [{'params': model.backbone.parameters(), 'lr': args.lr/10},
                     {'params': new_params, 'lr': args.lr}]
-    optimizer = torch.optim.SGD(param_groups, lr=args.lr, momentum=0.9, weight_decay=5e-4, nesterov=True)
+    optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
     # scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
@@ -85,4 +84,3 @@ if __name__ == "__main__":
 
     # train -----------------------------------------------------------------------------------
     train(model, criterion, optimizer, scheduler, train_dataloader, args.epochs, device, save_dir_path, args)
-
