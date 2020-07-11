@@ -59,7 +59,7 @@ if __name__ == "__main__":
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, share_conv=args.share_conv)
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------

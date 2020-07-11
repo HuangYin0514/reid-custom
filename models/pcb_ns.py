@@ -32,7 +32,7 @@ class PCBModel(nn.Module):
         self.loss = loss
 
         # backbone--------------------------------------------------------------------------
-        self.resnet50_Branch = Resnet50_Branch()
+        self.backbone = Resnet50_Branch()
 
         # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
@@ -59,7 +59,7 @@ class PCBModel(nn.Module):
 
     def forward(self, x):
         # backbone(Tensor T)------------------------------------------------------------------------------------
-        resnet_features = self.resnet50_Branch(x)
+        resnet_features = self.backbone(x)
 
         # tensor g([N, C, H, W])---------------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)
