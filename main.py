@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='PCB_p6')
+parser.add_argument('--experiment', type=str, default='pcb_ns')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
@@ -27,9 +27,7 @@ parser.add_argument('--width', type=int, default=128, help='width of the input i
 parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
 
 # Model parameters-------------------------------------------------------------
-parser.add_argument('--share_conv', default=False, action='store_true')
 parser.add_argument('--stripes', type=int, default=6)
-parser.add_argument('--open_layers', nargs='+', default=[])
 
 
 # Train parameters-------------------------------------------------------------

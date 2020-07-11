@@ -4,12 +4,14 @@ import torch
 from .pcb import PCB_p6
 from .resnet import Res_net
 from .resnet_att import Resnet_self_attention
+from .pcb_ns import pcb_ns
 
 
 __model_factory = {
     'PCB_p6': PCB_p6,
     'Res_net': Res_net,
-    'Resnet_self_attention': Resnet_self_attention
+    'Resnet_self_attention': Resnet_self_attention,
+    'pcb_ns':pcb_ns
 }
 
 
