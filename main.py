@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='pcb_ns')
+parser.add_argument('--experiment', type=str, default='pcb_rga')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids)
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids,height=args.height, width=args.width)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------

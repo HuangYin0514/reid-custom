@@ -5,35 +5,42 @@ from torchvision import models
 from utils import torchtool
 
 
-class PCBModel(nn.Module):
-    def __init__(self, num_classes, num_stripes, share_conv, loss='softmax', ** kwargs):
+class Resnet50_Branch(nn.Module):
+    def __init__(self, ** kwargs):
+        super(Resnet50_Branch, self).__init__()
 
-        super(PCBModel, self).__init__()
-        self.num_stripes = num_stripes
-        self.num_classes = num_classes
-        self.loss = loss
-
-        # bone--------------------------------------------------------------------------
+        # backbone--------------------------------------------------------------------------
         resnet = models.resnet50(pretrained=True)
         # Modifiy the stride of last conv layer----------------------------
         resnet.layer4[0].downsample[0].stride = (1, 1)
         resnet.layer4[0].conv2.stride = (1, 1)
         # Remove avgpool and fc layer of resnet------------------------------
-        # modules = list(resnet.children())[:-2]
-        # self.backbone = nn.Sequential(*modules)
         self.backbone = nn.Sequential(
             resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool,
             resnet.layer1, resnet.layer2, resnet.layer3, resnet.layer4)
 
-        ####################################################################################
+    def forward(self, x):
+        return self.backbone(x)
+
+
+class PCBModel(nn.Module):
+    def __init__(self, num_classes, loss='softmax', ** kwargs):
+
+        super(PCBModel, self).__init__()
+        self.parts = 6
+        self.num_classes = num_classes
+        self.loss = loss
+
+        # backbone--------------------------------------------------------------------------
+        self.backbone = Resnet50_Branch()
 
         # avgpool--------------------------------------------------------------------------
-        self.avgpool = nn.AdaptiveAvgPool2d((self.num_stripes, 1))
+        self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
         # self.dropout = nn.Dropout(p=0.5)
 
         # local_conv--------------------------------------------------------------------
         self.local_conv_list = nn.ModuleList()
-        for _ in range(num_stripes):
+        for _ in range(self.parts):
             local_conv = nn.Sequential(
                 nn.Conv1d(2048, 256, kernel_size=1),
                 nn.BatchNorm1d(256),
@@ -43,7 +50,7 @@ class PCBModel(nn.Module):
 
         # Classifier for each stripe--------------------------------------------------------------------------
         self.fc_list = nn.ModuleList()
-        for _ in range(num_stripes):
+        for _ in range(self.parts):
             fc = nn.Linear(256, num_classes)
             nn.init.normal_(fc.weight, std=0.001)
             nn.init.constant_(fc.bias, 0)
@@ -51,19 +58,15 @@ class PCBModel(nn.Module):
             self.fc_list.append(fc)
 
     def forward(self, x):
-        # backbone------------------------------------------------------------------------------------
-        # tensor T
+        # backbone(Tensor T)------------------------------------------------------------------------------------
         resnet_features = self.backbone(x)
 
-        # tensor g---------------------------------------------------------------------------------
-        # [N, C, H, W]
+        # tensor g([N, C, H, W])---------------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)
-        # features_G = self.dropout(features_G)
 
-        # 1x1 conv---------------------------------------------------------------------------------
-        # [N, C=256, H=S, W=1]
+        # 1x1 conv([N, C=256, H=S, W=1])---------------------------------------------------------------------------------
         features_H = []
-        for i in range(self.num_stripes):
+        for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
@@ -73,18 +76,15 @@ class PCBModel(nn.Module):
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
 
-        # fc---------------------------------------------------------------------------------
-        # [N, C=num_classes]
+        # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
         batch_size = x.size(0)
-        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.num_stripes)]
+        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
         return logits_list
 
 
-def PCB_p6(num_classes, num_stripes=6, **kwargs):
-    assert num_stripes == 6, "num_stripes not eq 6"
+def pcb(num_classes, **kwargs):
     return PCBModel(
         num_classes=num_classes,
-        num_stripes=num_stripes,
         **kwargs
     )
