@@ -4,15 +4,15 @@ import os
 import numpy as np
 import torch
 import torch.nn.functional as F
+from torch.backends import cudnn
 
 from dataloader import getDataLoader
 from metrics import distance, rank
 from models import build_model
 from utils import util
 
+
 # ---------------------- Extract features ----------------------
-
-
 def _parse_data_for_eval(data):
     imgs = data[0]
     pids = data[1]
@@ -109,6 +109,9 @@ if __name__ == "__main__":
     parser.add_argument('--share_conv', default=False, action='store_true')
 
     args = parser.parse_args()
+
+    # speed up compution---------------------------------------------------------------------------
+    cudnn.benchmark = True
 
     # devie---------------------------------------------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

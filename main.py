@@ -3,12 +3,10 @@ import argparse
 import os
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
 from dataloader import getDataLoader
 from models import build_model
-from scheduler import build_scheduler
 from train import train
+from torch.backends import cudnn
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -54,12 +52,14 @@ if __name__ == "__main__":
     # Fix random seed---------------------------------------------------------------------------
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)
+    # speed up compution---------------------------------------------------------------------------
+    cudnn.benchmark = True
 
     # dataset------------------------------------------------------------------------------------
     train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids,height=args.height, width=args.width)
+    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, height=args.height, width=args.width)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------

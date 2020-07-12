@@ -1,17 +1,8 @@
-import argparse
-import os
 import time
+from test import test
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
-
-from dataloader import getDataLoader
-from models import build_model
 from utils import util
-from test import test
-from utils import torchtool
 
 
 # ---------------------- Train function ----------------------
