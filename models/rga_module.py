@@ -8,7 +8,6 @@ from torch.nn import functional as F
 # ===================
 #     RGA Module
 # ===================
-
 class RGA_Module(nn.Module):
     def __init__(self, in_channel, in_spatial, use_spatial=True, use_channel=True, \
         cha_ratio=8, spa_ratio=8, down_ratio=8):
