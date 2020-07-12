@@ -47,6 +47,8 @@ class PCB_RGA(nn.Module):
             cha_on = True
         else:
             raise NameError
+        spa_on = False
+        cha_on = True
         s_ratio = 8
         c_ratio = 8
         d_ratio = 8
