@@ -21,7 +21,7 @@ parser.add_argument('--experiment', type=str, default='pcb_rga')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
-parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/reid-custom/data/Market-1501-v15.09.15')
+parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/data/Market-1501-v15.09.15')
 parser.add_argument('--height', type=int, default=384, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
