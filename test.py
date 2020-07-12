@@ -3,16 +3,12 @@ import os
 
 import numpy as np
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from torchvision import datasets, transforms
+import torch.nn.functional as F
 
-from utils import util
 from dataloader import getDataLoader
+from metrics import distance, rank
 from models import build_model
-
-from metrics import distance
-from metrics import rank
+from utils import util
 
 # ---------------------- Extract features ----------------------
 
