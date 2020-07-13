@@ -137,7 +137,7 @@ class RGA_Module(nn.Module):
 
         if self.use_channel:
             # channel attention
-            xc = x.view(b, c, -1).permute(0, 2, 1).unsqueeze(-1)
+            xc = x.view(b, c, -1).permute(0, 2, 1).unsqueeze(-1).contiguous()
             theta_xc = self.theta_channel(xc).squeeze(-1).permute(0, 2, 1)
             phi_xc = self.phi_channel(xc).squeeze(-1)
             Gc = torch.matmul(theta_xc, phi_xc)
