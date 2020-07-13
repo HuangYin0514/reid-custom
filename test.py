@@ -117,7 +117,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=1, share_conv=args.share_conv)
+    model = build_model(args.experiment, num_classes=1, height=args.height, width=args.width)
     model = util.load_network(model, args.checkpoint, args.which_epoch)
     model = model.to(device)
 
