@@ -23,6 +23,7 @@ parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/data/Ma
 parser.add_argument('--height', type=int, default=384, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
+parser.add_argument('--test_batch_size', default=64, type=int, help='batch_size')
 
 # Model parameters-------------------------------------------------------------
 parser.add_argument('--stripes', type=int, default=6)

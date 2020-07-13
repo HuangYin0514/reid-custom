@@ -71,7 +71,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         # Testing / Validating-----------------------------------
         if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
             torch.cuda.empty_cache()
-            CMC, mAP = test(model, args.dataset, args.dataset_path, 512, device, args)
+            CMC, mAP = test(model, args.dataset, args.dataset_path, args.test_batch_size, device, args)
             logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
 
             logger.x_epoch_test.append(epoch + 1)
