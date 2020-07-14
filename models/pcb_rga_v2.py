@@ -13,8 +13,8 @@ class Resnet50_Branch(nn.Module):
         # backbone--------------------------------------------------------------------------
         resnet = models.resnet50(pretrained=True)
         # Modifiy the stride of last conv layer----------------------------
-        # resnet.layer4[0].downsample[0].stride = (1, 1)
-        resnet.layer4[0].conv2.stride = (1, 1)
+        resnet.layer4[0].downsample[0].stride = (1, 1)
+        # resnet.layer4[0].conv2.stride = (1, 1)
         # Remove avgpool and fc layer of resnet------------------------------
         self.backbone = nn.Sequential(
             resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool,
