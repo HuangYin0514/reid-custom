@@ -107,7 +107,7 @@ class PCB_RGA(nn.Module):
         return logits_list
 
 
-def pcb_rga(num_classes, **kwargs):
+def pcb_rga_v2(num_classes, **kwargs):
     return PCB_RGA(
         num_classes=num_classes,
         **kwargs

@@ -5,12 +5,14 @@ from .resnet import Res_net
 from .resnet_att import Resnet_self_attention
 from .pcb import pcb
 from .pcb_rga import pcb_rga
+from .pcb_rga_v2 import pcb_rga_v2
 
 __model_factory = {
     'Res_net': Res_net,
     'Resnet_self_attention': Resnet_self_attention,
     'pcb': pcb,
-    'pcb_rga': pcb_rga
+    'pcb_rga': pcb_rga,
+    'pcb_rga_v2':pcb_rga_v2
 }
 
 
