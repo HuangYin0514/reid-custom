@@ -1,6 +1,4 @@
 
-import torch
-
 from .resnet import Res_net
 from .resnet_att import Resnet_self_attention
 from .pcb import pcb
