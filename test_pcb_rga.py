@@ -2,7 +2,7 @@ from models import build_model
 import torch
 
 if __name__ == "__main__":
-    model = build_model('pcb_rga', num_classes=100, height=256, width=128)
+    model = build_model('pcb_rga_v3', num_classes=100, height=256, width=128)
 
     model.eval()
     inp1 = torch.randn(3, 3, 256, 128)
