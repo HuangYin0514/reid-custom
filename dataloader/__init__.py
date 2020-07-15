@@ -17,7 +17,7 @@ def getDataLoader(dataset, batch_size, dataset_path, part, args, shuffle=True, a
 
     avai_dataset = list(__dataset_factory.keys())
     if dataset not in avai_dataset:
-        raise KeyError('Unknown model: {}. Must be one of {}'.format(name, avai_dataset))
+        raise KeyError('Unknown model: {}. Must be one of {}'.format(part, avai_dataset))
     # transform ------------------------------------------------------------
     transform_list = [
         transforms.Resize(size=(args.height, args.width), interpolation=3),

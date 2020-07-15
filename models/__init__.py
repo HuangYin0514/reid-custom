@@ -5,6 +5,7 @@ from .pcb import pcb
 from .pcb_rga import pcb_rga
 from .pcb_rga_v2 import pcb_rga_v2
 from .pcb_rga_v3 import pcb_rga_v3
+from .pcb_rga_v4 import pcb_rga_v4
 
 __model_factory = {
     'Res_net': Res_net,
@@ -12,7 +13,8 @@ __model_factory = {
     'pcb': pcb,
     'pcb_rga': pcb_rga,
     'pcb_rga_v2':pcb_rga_v2,
-    'pcb_rga_v3':pcb_rga_v3
+    'pcb_rga_v3':pcb_rga_v3,
+    'pcb_rga_v4':pcb_rga_v4
 }
 
 
