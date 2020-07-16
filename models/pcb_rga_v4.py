@@ -86,10 +86,10 @@ class PCB_RGA(nn.Module):
         # rga_att ([N, 2048, 24, 6])------------------------------------------------------------------------------------
         att_features = self.rga_att(resnet_features)
 
-        resnet_features = torch.cat([resnet_features,att_features],1)
+        # resnet_features = torch.cat([resnet_features,att_features],1)
 
-        resnet_features = self.reduce_conv(resnet_features)
-
+        # resnet_features = self.reduce_conv(resnet_features)
+        x = resnet_features+att_features
 
         # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)
