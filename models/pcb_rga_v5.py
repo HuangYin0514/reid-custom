@@ -56,6 +56,27 @@ class PCB_RGA(nn.Module):
         # backbone=============================================================================
         self.backbone = Resnet50_Branch()
 
+        # rga module=============================================================================
+        branch_name = 'rgas'
+        if 'rgasc' in branch_name:
+            spa_on = True
+            cha_on = True
+        elif 'rgas' in branch_name:
+            spa_on = True
+            cha_on = False
+        elif 'rgac' in branch_name:
+            spa_on = False
+            cha_on = True
+        else:
+            raise NameError
+        spa_on = False
+        cha_on = True
+        s_ratio = 8
+        c_ratio = 8
+        d_ratio = 8
+        self.rga_att = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
+                                  cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
+
         # gloab=============================================================================
         self.global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.gloab = nn.Sequential(
@@ -90,18 +111,13 @@ class PCB_RGA(nn.Module):
             self.fc_list.append(fc)
 
     def forward(self, x):
-        # backbone(Tensor T) ========================================================================================
+        # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
         resnet_features = self.backbone(x)
 
-        # gloab ========================================================================================
-        global_avgpool_features = self.global_avgpool(resnet_features)
+        # gloab([N, 512]) ========================================================================================
+        att_features = self.rga_att(resnet_features)
+        global_avgpool_features = self.global_avgpool(att_features)
         gloab_features = self.gloab(global_avgpool_features).squeeze()
-        
-        # rga_att ([N, 2048, 24, 6])------------------------------------------------------------------------------------
-        # att_features = self.rga_att(resnet_features)
-        # # resnet_features = torch.cat([resnet_features,att_features],1)
-        # # resnet_features = self.reduce_conv(resnet_features)
-        # x = resnet_features+att_features
 
         # parts ========================================================================================
         # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
@@ -109,7 +125,7 @@ class PCB_RGA(nn.Module):
 
         # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
         features_H = []
-        for i in range(self.parts):
+        for i in range(self.parts): 
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
@@ -123,7 +139,7 @@ class PCB_RGA(nn.Module):
         # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
 
         gloab_softmax = self.global_softmax(gloab_features)
-        
+
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
