@@ -30,7 +30,7 @@ parser.add_argument('--stripes', type=int, default=6)
 
 
 # Train parameters-------------------------------------------------------------
-parser.add_argument('--epochs', type=int, default=60)
+parser.add_argument('--epochs', type=int, default=1)
 parser.add_argument('--test_every', type=int, default=1)
 parser.add_argument('--fixbase_epoch', type=int, default=0)
 

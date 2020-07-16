@@ -23,6 +23,7 @@ def _parse_data_for_eval(data):
 def _extract_features(model, input):
     model.eval()
     return model(input)
+    
 
 
 # ---------------------- Start testing ----------------------
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     # -----------------------------parameters setting --------------------------------
     parser = argparse.ArgumentParser(description='Testing arguments')
 
-    parser.add_argument('--experiment', type=str, default='PCB_p6')
+    parser.add_argument('--experiment', type=str, default='pcb_rga_v5')
     parser.add_argument('--save_path', type=str, default='./experiments')
     parser.add_argument('--which_epoch', default='final', type=str, help='0,1,2,3...or final')
     parser.add_argument('--checkpoint', type=str, default='/home/hy/vscode/reid-custom/experiments/Market1501')

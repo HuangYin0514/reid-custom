@@ -139,8 +139,7 @@ def load_network(network, path, epoch_label):
     file_path = os.path.join(path, 'net_%s.pth' % epoch_label)
 
     # Original saved file with DataParallel
-    state_dict = torch.load(
-        file_path, map_location=lambda storage, loc: storage)
+    state_dict = torch.load(file_path, map_location=lambda storage, loc: storage)
 
     # If the model saved with DataParallel, the keys in state_dict contains 'module'
     if list(state_dict.keys())[0][:6] == 'module':
@@ -155,7 +154,7 @@ def load_network(network, path, epoch_label):
     # # ------------- PCB specific -------------
     # # Load PCB from another dataset, change the fc_list parameters' shape
     for name in state_dict.keys():
-        if name[0:7] == 'fc_list':
+        if name[0:7] == 'fc_list' or name[0:14]=='global_softmax':
             desired_shape = network.state_dict()[name].shape
             if desired_shape != state_dict[name].shape:
                 state_dict[name] = torch.randn(desired_shape)

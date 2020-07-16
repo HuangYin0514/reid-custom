@@ -96,7 +96,7 @@ class PCB_RGA(nn.Module):
         # gloab ========================================================================================
         global_avgpool_features = self.global_avgpool(resnet_features)
         gloab_features = self.gloab(global_avgpool_features).squeeze()
-        gloab_softmax = self.global_softmax(gloab_features)
+        
         # rga_att ([N, 2048, 24, 6])------------------------------------------------------------------------------------
         # att_features = self.rga_att(resnet_features)
         # # resnet_features = torch.cat([resnet_features,att_features],1)
@@ -121,6 +121,9 @@ class PCB_RGA(nn.Module):
             return v_g.view(v_g.size(0), -1)
 
         # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
+
+        gloab_softmax = self.global_softmax(gloab_features)
+        
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
