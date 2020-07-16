@@ -56,29 +56,6 @@ class PCB_RGA(nn.Module):
         # backbone=============================================================================
         self.backbone = Resnet50_Branch()
 
-        # rga module=============================================================================
-        branch_name = 'rgas'
-        if 'rgasc' in branch_name:
-            spa_on = True
-            cha_on = True
-        elif 'rgas' in branch_name:
-            spa_on = True
-            cha_on = False
-        elif 'rgac' in branch_name:
-            spa_on = False
-            cha_on = True
-        else:
-            raise NameError
-        spa_on = False
-        cha_on = True
-        s_ratio = 8
-        c_ratio = 8
-        d_ratio = 8
-        self.rga_att = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
-                                  cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
-
-        self.reduce_conv = nn.Conv2d(2048*2, 2048, kernel_size=1, bias=False)
-
         # gloab=============================================================================
         self.global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.gloab = nn.Sequential(
@@ -135,10 +112,10 @@ class PCB_RGA(nn.Module):
         for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
-        features_H.append(gloab_features.unsqueeze_(2))
 
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
+            features_H.append(gloab_features.unsqueeze_(2))
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
@@ -150,7 +127,7 @@ class PCB_RGA(nn.Module):
         return logits_list, gloab_softmax
 
 
-def pcb_rga_v4(num_classes, **kwargs):
+def pcb_rga_v5(num_classes, **kwargs):
     return PCB_RGA(
         num_classes=num_classes,
         **kwargs
