@@ -5,6 +5,29 @@ from torchvision import models
 from .rga_module import RGA_Module
 
 
+def weights_init_kaiming(m):
+    classname = m.__class__.__name__
+    if classname.find('Linear') != -1:
+        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_out')
+        nn.init.constant_(m.bias, 0.0)
+    elif classname.find('Conv') != -1:
+        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0.0)
+    elif classname.find('BatchNorm') != -1:
+        if m.affine:
+            nn.init.normal_(m.weight, 1.0, 0.02)
+            nn.init.constant_(m.bias, 0.0)
+
+
+def weights_init_classifier(m):
+    classname = m.__class__.__name__
+    if classname.find('Linear') != -1:
+        nn.init.normal_(m.weight, std=0.001)
+        if m.bias:
+            nn.init.constant_(m.bias, 0.0)
+
+
 class Resnet50_Branch(nn.Module):
     def __init__(self, ** kwargs):
         super(Resnet50_Branch, self).__init__()
@@ -30,10 +53,10 @@ class PCB_RGA(nn.Module):
         self.num_classes = num_classes
         self.loss = loss
 
-        # backbone--------------------------------------------------------------------------
+        # backbone=============================================================================
         self.backbone = Resnet50_Branch()
 
-        # rga module--------------------------------------------------------------------------
+        # rga module=============================================================================
         branch_name = 'rgas'
         if 'rgasc' in branch_name:
             spa_on = True
@@ -56,6 +79,17 @@ class PCB_RGA(nn.Module):
 
         self.reduce_conv = nn.Conv2d(2048*2, 2048, kernel_size=1, bias=False)
 
+        # gloab=============================================================================
+        self.global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.global_softmax = nn.Linear(512, num_classes)
+        self.global_softmax.apply(weights_init_kaiming)
+        self.gloab = nn.Sequential(
+            nn.Conv2d(2048, 512, 1),
+            nn.BatchNorm2d(512),
+            nn.ReLU())
+        self.gloab.apply(weights_init_kaiming)
+
+        # part==============================================================================
         # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
         # self.dropout = nn.Dropout(p=0.5)
@@ -76,21 +110,23 @@ class PCB_RGA(nn.Module):
             fc = nn.Linear(256, num_classes)
             nn.init.normal_(fc.weight, std=0.001)
             nn.init.constant_(fc.bias, 0)
-            # fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
     def forward(self, x):
-        # backbone(Tensor T)------------------------------------------------------------------------------------
+        # backbone(Tensor T) ========================================================================================
         resnet_features = self.backbone(x)
 
+        # gloab ========================================================================================
+        global_avgpool_features = self.global_avgpool(resnet_features)
+        gloab_features = self.gloab(global_avgpool_features).squeeze()
+        gloab_softmax = self.global_softmax(gloab_features)
         # rga_att ([N, 2048, 24, 6])------------------------------------------------------------------------------------
-        att_features = self.rga_att(resnet_features)
+        # att_features = self.rga_att(resnet_features)
+        # # resnet_features = torch.cat([resnet_features,att_features],1)
+        # # resnet_features = self.reduce_conv(resnet_features)
+        # x = resnet_features+att_features
 
-        # resnet_features = torch.cat([resnet_features,att_features],1)
-
-        # resnet_features = self.reduce_conv(resnet_features)
-        x = resnet_features+att_features
-
+        # parts ========================================================================================
         # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)
 
@@ -99,10 +135,11 @@ class PCB_RGA(nn.Module):
         for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
+        features_H.append(gloab_features.unsqueeze_(2))
 
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
-            v_g = torch.cat(features_H, dim=2)
+            v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
 
@@ -110,7 +147,7 @@ class PCB_RGA(nn.Module):
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
-        return logits_list
+        return logits_list, gloab_softmax
 
 
 def pcb_rga_v4(num_classes, **kwargs):
