@@ -50,7 +50,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             for logits in parts_outputs:
                 stripe_loss = criterion(logits, labels)
                 part_loss += stripe_loss
-            loss = 0+gloab_loss
+            loss = part_loss+gloab_loss
             loss.backward()
             optimizer.step()
 
