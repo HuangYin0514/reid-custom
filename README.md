@@ -17,6 +17,7 @@ kaggle name = reid-custom
 |                                     [pcb(384x128]                                     | 92.96% | 79.92% | reid-custom-v150 |
 |                              [pcb(384x128_global_parts]                               | 92.73% | 79.94% | reid-custom-v152 |
 |                         [pcb(384x128_global(att_a)_parts{v5}]                         | 92.10% | 78.15% | reid-custom-v153 |
+|                         [pcb(384x128_global(att_s)_parts{v5}]                         | 91.69% | 77.73% | reid-custom-v154 |
 
 
 
@@ -38,6 +39,7 @@ kaggle name = reid-custom
 |                                     [pcb(384x128]                                     | 60.50% | 54.14% | reid-custom-v150 |
 |                              [pcb(384x128_global_parts]                               | 58.20% | 52.85% | reid-custom-v152 |
 |                         [pcb(384x128_global(att_a)_parts{v5}]                         | 53.40% | 47.54% | reid-custom-v153 |
+|                         [pcb(384x128_global(att_s)_parts{v5}]                         | 56.00% | 50.14% | reid-custom-v154 |
 
 
 
