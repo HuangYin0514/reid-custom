@@ -16,8 +16,9 @@ kaggle name = reid-custom
 |             [pcb(384x128)_sga_s](project_result/pcb(384x128)_sga_s.ipynb)             | 93.02% | 79.58% | reid-custom-v125 |
 |                                     [pcb(384x128]                                     | 92.96% | 79.92% | reid-custom-v150 |
 |                              [pcb(384x128_global_parts]                               | 92.73% | 79.94% | reid-custom-v152 |
-|                         [pcb(384x128_global(att_a)_parts{v5}]                         | 92.10% | 78.15% | reid-custom-v153 |
+|                         [pcb(384x128_global(att_c)_parts{v5}]                         | 92.10% | 78.15% | reid-custom-v153 |
 |                         [pcb(384x128_global(att_s)_parts{v5}]                         | 91.69% | 77.73% | reid-custom-v154 |
+|                         [pcb(256x128_global(att_s)_parts{v5}]                         | 91.51% | 78.06% | reid-custom-v155 |
 
 
 
@@ -38,8 +39,9 @@ kaggle name = reid-custom
 |             [pcb(384x128)_sga_s](project_result/pcb(384x128)_sga_s.ipynb)             | 60.20% | 53.88% | reid-custom-v125 |
 |                                     [pcb(384x128]                                     | 60.50% | 54.14% | reid-custom-v150 |
 |                              [pcb(384x128_global_parts]                               | 58.20% | 52.85% | reid-custom-v152 |
-|                         [pcb(384x128_global(att_a)_parts{v5}]                         | 53.40% | 47.54% | reid-custom-v153 |
+|                         [pcb(384x128_global(att_c)_parts{v5}]                         | 53.40% | 47.54% | reid-custom-v153 |
 |                         [pcb(384x128_global(att_s)_parts{v5}]                         | 56.00% | 50.14% | reid-custom-v154 |
+|                         [pcb(256x128_global(att_s)_parts{v5}]                         | 49.70% | 46.46% | reid-custom-v155 |
 
 
 
