@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 
+# devie-------------------------------------------------------------------------------------
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class CrossEntropyLabelSmoothLoss(nn.Module):
     """Cross entropy loss with label smoothing regularizer.
@@ -27,8 +30,7 @@ class CrossEntropyLabelSmoothLoss(nn.Module):
         """
         log_probs = self.logsoftmax(inputs)
         targets = torch.zeros(log_probs.size()).scatter_(1, targets.unsqueeze(1).cpu(), 1)
-        if self.use_gpu:
-            targets = targets.cuda()
+        targets = targets.to(device)
         targets = (1 - self.epsilon) * targets + self.epsilon / self.num_classes
         loss = (- targets * log_probs).mean(0).sum()
         return loss
