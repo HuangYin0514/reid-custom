@@ -7,6 +7,7 @@ from dataloader import getDataLoader
 from models import build_model
 from train_2output import train
 from torch.backends import cudnn
+from loss.crossEntropyLabelSmoothLoss import CrossEntropyLabelSmoothLoss
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -51,8 +52,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Fix random seed---------------------------------------------------------------------------
-    # torch.manual_seed(1)
-    # torch.cuda.manual_seed_all(1)
+    torch.manual_seed(1)
+    torch.cuda.manual_seed_all(1)
     # speed up compution---------------------------------------------------------------------------
     cudnn.benchmark = True
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    criterion = nn.CrossEntropyLoss()
+    criterion = CrossEntropyLabelSmoothLoss()
 
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))
