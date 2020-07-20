@@ -114,7 +114,7 @@ class PCB_RGA(nn.Module):
 
         # gloab([N, 512]) ========================================================================================
         att_features = self.rga_att(resnet_features)
-        global_avgpool_features = self.global_avgpool(resnet_features)
+        global_avgpool_features = self.global_avgpool(att_features)
         gloab_features = self.gloab(global_avgpool_features).squeeze()
 
         # parts ========================================================================================
@@ -123,7 +123,7 @@ class PCB_RGA(nn.Module):
 
         # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
         features_H = []
-        for i in range(self.parts): 
+        for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
