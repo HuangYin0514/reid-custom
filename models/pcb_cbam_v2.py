@@ -316,8 +316,8 @@ class resnet50_cbam_reid(nn.Module):
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
 #       -->resnet50_cbam(return function)-->ResNet-->Bottleneck(or chose the BasicBlock)-->ChannelAttention-->SpatialAttention
-def resnet50_cbam_reid_model(num_classes, **kwargs):
-    return resnet50_cbam_reid(
+def resnet50_cbam_reid_model_v2(num_classes, **kwargs):
+    return resnet50_cbam_reid_model_v2(
         num_classes=num_classes,
         **kwargs
     )
