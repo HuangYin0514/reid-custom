@@ -305,7 +305,6 @@ class resnet50_cbam_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
 
         # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
-
         gloab_softmax = self.global_softmax(gloab_features)
 
         batch_size = x.size(0)
