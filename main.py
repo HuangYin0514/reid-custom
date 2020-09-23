@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from dataloader import getDataLoader
 from models import build_model
-from train import train
+from train_2output import train
 from torch.backends import cudnn
 from loss.crossEntropyLabelSmoothLoss import CrossEntropyLabelSmoothLoss
 
@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='resnet50_cbam_reid_model')
+parser.add_argument('--experiment', type=str, default='pcb_rga_v5')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
