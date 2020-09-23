@@ -7,16 +7,18 @@ from .pcb_rga_v2 import pcb_rga_v2
 from .pcb_rga_v3 import pcb_rga_v3
 from .pcb_rga_v4 import pcb_rga_v4
 from .pcb_rga_v5 import pcb_rga_v5
+from .pcb_cbam import resnet50_cbam_reid_model
 
 __model_factory = {
     'Res_net': Res_net,
     'Resnet_self_attention': Resnet_self_attention,
     'pcb': pcb,
     'pcb_rga': pcb_rga,
-    'pcb_rga_v2':pcb_rga_v2,
-    'pcb_rga_v3':pcb_rga_v3,
-    'pcb_rga_v4':pcb_rga_v4,
-    'pcb_rga_v5':pcb_rga_v5
+    'pcb_rga_v2': pcb_rga_v2,
+    'pcb_rga_v3': pcb_rga_v3,
+    'pcb_rga_v4': pcb_rga_v4,
+    'pcb_rga_v5': pcb_rga_v5,
+    'resnet50_cbam_reid_model': resnet50_cbam_reid_model
 }
 
 
