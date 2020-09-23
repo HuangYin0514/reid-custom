@@ -113,7 +113,7 @@ class PCB_RGA(nn.Module):
         resnet_features = self.backbone(x)
 
         # gloab([N, 512]) ========================================================================================
-        att_features = self.rga_att(resnet_features)
+        # att_features = self.rga_att(resnet_features)
         global_avgpool_features = self.global_avgpool(att_features)
         gloab_features = self.gloab(global_avgpool_features).squeeze()
 
