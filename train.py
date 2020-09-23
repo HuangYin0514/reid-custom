@@ -14,7 +14,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
     # Logger instance--------------------------------------------
     logger = util.Logger(save_dir_path)
-    # logger.info('-' * 10)
+    logger.info('-' * 10)
     logger.info(vars(args))
     # logger.info(model)
 
