@@ -20,6 +20,29 @@ model_urls = {
 }
 
 
+def weights_init_kaiming(m):
+    classname = m.__class__.__name__
+    if classname.find('Linear') != -1:
+        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_out')
+        nn.init.constant_(m.bias, 0.0)
+    elif classname.find('Conv') != -1:
+        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0.0)
+    elif classname.find('BatchNorm') != -1:
+        if m.affine:
+            nn.init.normal_(m.weight, 1.0, 0.02)
+            nn.init.constant_(m.bias, 0.0)
+
+
+def weights_init_classifier(m):
+    classname = m.__class__.__name__
+    if classname.find('Linear') != -1:
+        nn.init.normal_(m.weight, std=0.001)
+        if m.bias:
+            nn.init.constant_(m.bias, 0.0)
+
+
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
@@ -136,8 +159,8 @@ class Bottleneck(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
-        out = self.ca(out) * out
-        out = self.sa(out) * out
+        # out = self.ca(out) * out
+        # out = self.sa(out) * out
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -252,6 +275,17 @@ class resnet50_cbam_reid(nn.Module):
         # backbone--------------------------------------------------------------------------
         self.backbone = Resnet50_backbone()
 
+        # gloab=============================================================================
+        self.global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.gloab = nn.Sequential(
+            nn.Conv2d(2048, 512, 1),
+            nn.BatchNorm2d(512),
+            nn.ReLU())
+        self.gloab.apply(weights_init_kaiming)
+        self.global_softmax = nn.Linear(512, num_classes)
+        self.global_softmax.apply(weights_init_kaiming)
+
+        # part==============================================================================
         # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
         # self.dropout = nn.Dropout(p=0.5)
@@ -272,33 +306,42 @@ class resnet50_cbam_reid(nn.Module):
             fc = nn.Linear(256, num_classes)
             nn.init.normal_(fc.weight, std=0.001)
             nn.init.constant_(fc.bias, 0)
-            # fc.apply(torchtool.weights_init_classifier)
             self.fc_list.append(fc)
 
     def forward(self, x):
-        # backbone(Tensor T)------------------------------------------------------------------------------------
+        # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
         resnet_features = self.backbone(x)
 
-        # tensor g([N, C, H, W])---------------------------------------------------------------------------------
+        # gloab([N, 512]) ========================================================================================
+        # att_features = self.rga_att(resnet_features)
+        global_avgpool_features = self.global_avgpool(resnet_features)
+        gloab_features = self.gloab(global_avgpool_features).squeeze()
+
+        # parts ========================================================================================
+        # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)
 
-        # 1x1 conv([N, C=256, H=S, W=1])---------------------------------------------------------------------------------
+        # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
         features_H = []
         for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
-        # Return the features_H***********************************************************************
+        # Return the features_H([N,1536])***********************************************************************
         if not self.training:
-            v_g = torch.cat(features_H, dim=2)
+            # features_H.append(gloab_features.unsqueeze_(2))
+            v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
 
         # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
+
+        gloab_softmax = self.global_softmax(gloab_features)
+
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
-        return logits_list
+        return logits_list, gloab_softmax
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
