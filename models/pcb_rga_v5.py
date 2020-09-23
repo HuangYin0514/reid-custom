@@ -57,7 +57,7 @@ class PCB_RGA(nn.Module):
         self.backbone = Resnet50_Branch()
 
         # rga module=============================================================================
-        branch_name = 'rgas'
+        branch_name = 'rgac'
         if 'rgasc' in branch_name:
             spa_on = True
             cha_on = True
@@ -123,7 +123,7 @@ class PCB_RGA(nn.Module):
 
         # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
         features_H = []
-        for i in range(self.parts):
+        for i in range(self.parts): 
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 

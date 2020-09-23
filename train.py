@@ -56,7 +56,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
         epoch_loss = running_loss / len(dataloader.dataset)
 
-        logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
+        # logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
         # logger.info('Training Loss: {:.4f}'.format(epoch_loss))
         # time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)
         # logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600, time_remaining/60 % 60))

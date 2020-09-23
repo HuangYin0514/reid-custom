@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='./experiments')
-parser.add_argument('--experiment', type=str, default='resnet50_cbam_reid_model_v2')
+parser.add_argument('--experiment', type=str, default='pcb_rga_v5')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
@@ -31,8 +31,8 @@ parser.add_argument('--stripes', type=int, default=6)
 
 
 # Train parameters-------------------------------------------------------------
-parser.add_argument('--epochs', type=int, default=2)
-parser.add_argument('--test_every', type=int, default=2)
+parser.add_argument('--epochs', type=int, default=1)
+parser.add_argument('--test_every', type=int, default=1)
 parser.add_argument('--fixbase_epoch', type=int, default=0)
 
 
