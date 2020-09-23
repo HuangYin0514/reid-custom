@@ -86,45 +86,6 @@ class SpatialAttention(nn.Module):
         return self.sigmoid(x)
 
 
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
-
-        self.ca = ChannelAttention(planes)
-        self.sa = SpatialAttention()
-
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        out = self.ca(out) * out
-        out = self.sa(out) * out
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
 class Bottleneck(nn.Module):
     expansion = 4
 
@@ -158,9 +119,6 @@ class Bottleneck(nn.Module):
 
         out = self.conv3(out)
         out = self.bn3(out)
-
-        # out = self.ca(out) * out
-        # out = self.sa(out) * out
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -256,12 +214,25 @@ class Resnet50_backbone(nn.Module):
         resnet.layer4[0].downsample[0].stride = (1, 1)
         resnet.layer4[0].conv2.stride = (1, 1)
         # Remove avgpool and fc layer of resnet------------------------------
-        self.backbone = nn.Sequential(
-            resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool,
-            resnet.layer1, resnet.layer2, resnet.layer3, resnet.layer4)
+        self.resnet_conv1 = resnet.conv1
+        self.resnet_bn1 = resnet.bn1
+        self.resnet_relu = resnet.relu
+        self.resnet_maxpool = resnet.maxpool
+        self.resnet_layer1 = resnet.layer1
+        self.resnet_layer2 = resnet.layer2
+        self.resnet_layer3 = resnet.layer3
+        self.resnet_layer4 = resnet.layer4
 
     def forward(self, x):
-        return self.backbone(x)
+        x = self.resnet_conv1(x)
+        x = self.resnet_bn1(x)
+        x = self.resnet_relu(x)
+        x = self.resnet_maxpool(x)
+        x = self.resnet_layer1(x)
+        x = self.resnet_layer2(x)
+        x = self.resnet_layer3(x)
+        x = self.resnet_layer4(x)
+        return x
 
 
 class resnet50_cbam_reid(nn.Module):
