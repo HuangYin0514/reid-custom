@@ -65,7 +65,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             logger.y_test['mAP'].append(mAP)
             if epoch + 1 != num_epochs:
                 util.save_network(model, save_dir_path, str(epoch + 1))
-        # logger.info('-' * 10)
+        logger.info('-' * 10)
 
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 
