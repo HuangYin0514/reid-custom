@@ -127,6 +127,8 @@ class PCB_RGA(nn.Module):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
+        
+
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
             # features_H.append(gloab_features.unsqueeze_(2))

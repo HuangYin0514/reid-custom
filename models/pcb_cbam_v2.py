@@ -230,9 +230,10 @@ class Resnet50_backbone(nn.Module):
         x = self.resnet_maxpool(x)
         x = self.resnet_layer1(x)
         x = self.resnet_layer2(x)
+        layer_2_out = x
         x = self.resnet_layer3(x)
         x = self.resnet_layer4(x)
-        return x
+        return x, layer_2_out
 
 
 class resnet50_cbam_reid(nn.Module):
@@ -255,6 +256,16 @@ class resnet50_cbam_reid(nn.Module):
         self.gloab.apply(weights_init_kaiming)
         self.global_softmax = nn.Linear(512, num_classes)
         self.global_softmax.apply(weights_init_kaiming)
+
+        # shallow feature===================================================================
+        self.shallow_global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.shallow_gloab = nn.Sequential(
+            nn.Conv2d(512, 256, 1),
+            nn.BatchNorm2d(256),
+            nn.ReLU())
+        self.shallow_gloab.apply(weights_init_kaiming)
+        self.shallow_global_softmax = nn.Linear(256, num_classes)
+        self.shallow_global_softmax.apply(weights_init_kaiming)
 
         # part==============================================================================
         # avgpool--------------------------------------------------------------------------
@@ -281,15 +292,21 @@ class resnet50_cbam_reid(nn.Module):
 
     def forward(self, x):
         # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
-        resnet_features = self.backbone(x)
+        resnet_features, layer_2_out = self.backbone(x)
 
         # gloab([N, 512]) ========================================================================================
         global_avgpool_features = self.global_avgpool(resnet_features)
         gloab_features = self.gloab(global_avgpool_features).squeeze()
 
+        # shallow feature([N, 256]) ========================================================================================
+        shallow_global_avgpool_features = self.shallow_global_avgpool(layer_2_out)
+        shallow_gloab_features = self.shallow_gloab(shallow_global_avgpool_features).squeeze()
+
         # parts ========================================================================================
         # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)
+
+        ######################################################################################################################
 
         # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
         features_H = []
@@ -297,20 +314,23 @@ class resnet50_cbam_reid(nn.Module):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
+        # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
+        gloab_softmax = self.global_softmax(gloab_features)
+        # shallow fc（[N, C=num_classes]）-------------------------------------------------------------------------
+        shallow_global_softmax = self.shallow_global_softmax(shallow_gloab_features)
+
+        ######################################################################################################################
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
             features_H.append(gloab_features.unsqueeze_(2))
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
-
-        # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
-        gloab_softmax = self.global_softmax(gloab_features)
-
+        
         batch_size = x.size(0)
         logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
-        return logits_list, gloab_softmax
+        return logits_list, gloab_softmax, shallow_global_softmax
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
