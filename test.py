@@ -11,7 +11,6 @@ from metrics import distance, rank
 from models import build_model
 from utils import util
 
-
 # ---------------------- Extract features ----------------------
 def _parse_data_for_eval(data):
     imgs = data[0]
