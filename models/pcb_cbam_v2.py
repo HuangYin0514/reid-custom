@@ -268,7 +268,6 @@ class resnet50_cbam_reid(nn.Module):
         self.shallow_global_softmax.apply(weights_init_kaiming)
 
         # part==============================================================================
-        # avgpool--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
         # self.dropout = nn.Dropout(p=0.5)
 
@@ -294,6 +293,7 @@ class resnet50_cbam_reid(nn.Module):
         # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
         resnet_features, layer_2_out = self.backbone(x)
 
+        ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
         global_avgpool_features = self.global_avgpool(resnet_features)
         gloab_features = self.gloab(global_avgpool_features).squeeze()

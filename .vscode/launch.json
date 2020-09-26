@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "main.py",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+        },
+        {
             "name": "train.py",
             "type": "python",
             "request": "launch",
