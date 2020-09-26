@@ -86,13 +86,6 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             CMC, mAP = test(model, args.test_other_dataset_name, args.test_other_dataset_path, args.test_batch_size, device, args)
             logger.info(args.test_other_dataset_name)
             logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
-
-            logger.x_epoch_test.append(epoch + 1)
-            logger.y_test['top1'].append(CMC[0])
-            logger.y_test['mAP'].append(mAP)
-            if epoch + 1 != num_epochs:
-                util.save_network(model, save_dir_path, str(epoch + 1))
-
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 
     # Save the loss curve-----------------------------------
