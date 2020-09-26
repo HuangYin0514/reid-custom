@@ -17,6 +17,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     # logger.info('-' * 10)
     logger.info(vars(args))
     # logger.info(model)
+    logger.info('train starting...')
 
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
@@ -34,15 +35,20 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
 
             optimizer.zero_grad()
             # with torch.set_grad_enabled(True):-------------
-            parts_outputs, gloab_outputs, shallow_global_softmax = model(inputs)
-            shallow_gloab_loss = criterion(shallow_global_softmax, labels)
-            gloab_loss = criterion(gloab_outputs, labels)
+            #############3 output#############
+            # parts_outputs, gloab_outputs, shallow_global_softmax = model(inputs)
+            # shallow_gloab_loss = criterion(shallow_global_softmax, labels)
+            # gloab_loss = criterion(gloab_outputs, labels)
+            ##################################
+            parts_outputs, gloab_shallow_outputs = model(inputs)
+            gloab_shallow__loss = criterion(gloab_shallow_outputs, labels)
             # Sum up the stripe softmax loss-------------------
             part_loss = 0
             for logits in parts_outputs:
                 stripe_loss = criterion(logits, labels)
                 part_loss += stripe_loss
-            loss = part_loss+gloab_loss+shallow_gloab_loss
+            # loss = part_loss+gloab_loss+shallow_gloab_loss
+            loss = part_loss+gloab_shallow__loss
             loss.backward()
             optimizer.step()
 
