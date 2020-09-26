@@ -55,18 +55,19 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             running_loss += loss.item() * inputs.size(0)
         # ===================one epoch end================
 
-        epoch_loss = running_loss / len(dataloader.dataset)
-        logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
-        logger.info('Training Loss: {:.4f}'.format(epoch_loss))
-        time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)
-        logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600, time_remaining/60 % 60))
-
-        # Save result to logger---------------------------------
-        logger.x_epoch_loss.append(epoch + 1)
-        logger.y_train_loss.append(epoch_loss)
+        if epoch % 10 == 0:
+            epoch_loss = running_loss / len(dataloader.dataset)
+            logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
+            logger.info('Training Loss: {:.4f}'.format(epoch_loss))
+            time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)
+            logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600, time_remaining/60 % 60))
+            # Save result to logger---------------------------------
+            logger.x_epoch_loss.append(epoch + 1)
+            logger.y_train_loss.append(epoch_loss)
 
         # Testing / Validating-----------------------------------
         if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
+            # test current datset-------------------------------------
             torch.cuda.empty_cache()
             CMC, mAP = test(model, args.dataset, args.dataset_path, args.test_batch_size, device, args)
             logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
@@ -76,7 +77,19 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             logger.y_test['mAP'].append(mAP)
             if epoch + 1 != num_epochs:
                 util.save_network(model, save_dir_path, str(epoch + 1))
-        logger.info('-' * 10)
+
+            logger.info('-' * 10)
+
+            # test other dataset-------------------------------------
+            torch.cuda.empty_cache()
+            CMC, mAP = test(model, args.dataset, args.test_other_dataset_path, args.test_batch_size, device, args)
+            logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
+
+            logger.x_epoch_test.append(epoch + 1)
+            logger.y_test['top1'].append(CMC[0])
+            logger.y_test['mAP'].append(mAP)
+            if epoch + 1 != num_epochs:
+                util.save_network(model, save_dir_path, str(epoch + 1))
 
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 
