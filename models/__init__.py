@@ -9,6 +9,7 @@ from .pcb_rga_v4 import pcb_rga_v4
 from .pcb_rga_v5 import pcb_rga_v5
 from .pcb_cbam import resnet50_cbam_reid_model
 from .pcb_cbam_v2 import resnet50_cbam_reid_model_v2
+from .pcb_cbam_v3 import resnet50_cbam_reid_model_v3
 
 
 __model_factory = {
@@ -21,7 +22,9 @@ __model_factory = {
     'pcb_rga_v4': pcb_rga_v4,
     'pcb_rga_v5': pcb_rga_v5,
     'resnet50_cbam_reid_model': resnet50_cbam_reid_model,
-    'resnet50_cbam_reid_model_v2': resnet50_cbam_reid_model_v2
+    'resnet50_cbam_reid_model_v2': resnet50_cbam_reid_model_v2,
+    'resnet50_cbam_reid_model_v3': resnet50_cbam_reid_model_v3
+
 }
 
 
