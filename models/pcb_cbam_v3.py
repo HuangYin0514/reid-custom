@@ -251,16 +251,16 @@ class resnet50_cbam_reid(nn.Module):
         self.gloab_agp = nn.AdaptiveAvgPool2d((1, 1))
         self.gloab_conv = nn.Sequential(
             nn.Conv2d(2048, 512, 1),
-            nn.BatchNorm2d(512),
-            )
+            nn.BatchNorm1d(512),
+            nn.ReLU(inplace=True))
         self.gloab_conv.apply(weights_init_kaiming)
 
         # shallow feature===================================================================
         self.shallow_agp = nn.AdaptiveAvgPool2d((1, 1))
         self.shallow_conv = nn.Sequential(
             nn.Conv2d(512, 256, 1),
-            nn.BatchNorm2d(256),
-            nn.ReLU())
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True))
         self.shallow_conv.apply(weights_init_kaiming)
 
         self.global_shallow_classifier = nn.Linear(768, num_classes)
