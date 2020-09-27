@@ -268,8 +268,6 @@ class resnet50_cbam_reid(nn.Module):
 
         # part(pcb)==============================================================================
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
-        # self.dropout = nn.Dropout(p=0.5)
-        # local_conv--------------------------------------------------------------------
         self.local_conv_list = nn.ModuleList()
         for _ in range(self.parts):
             local_conv = nn.Sequential(
@@ -277,8 +275,7 @@ class resnet50_cbam_reid(nn.Module):
                 nn.BatchNorm1d(256),
                 nn.ReLU(inplace=True))
             self.local_conv_list.append(local_conv)
-        ########################################################################################################
-        # Classifier for each stripe--------------------------------------------------------------------------
+        # Classifier for each stripe
         self.parts_classifier_list = nn.ModuleList()
         for _ in range(self.parts):
             fc = nn.Linear(256, num_classes)
@@ -287,44 +284,40 @@ class resnet50_cbam_reid(nn.Module):
             self.parts_classifier_list.append(fc)
 
     def forward(self, x):
-        # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
-        resnet_features, layer_2_out = self.backbone(x)
+        # backbone(Tensor T) ========================================================================================
+        resnet_features, layer_2_out = self.backbone(x)  # ([N, 2048, 24, 6])
 
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
-        gloab_features = self.gloab_agp(resnet_features)
-        # gloab_features = self.gloab_conv(gloab_features).squeeze()
+        gloab_features = self.gloab_agp(resnet_features)  # ([N, 2048])
+        gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
-        # shallow feature([N, 256]) ========================================================================================
-        shallow_features = self.shallow_agp(layer_2_out)
-        # shallow_features = self.shallow_conv(shallow_features).squeeze()
+        # shallow feature ========================================================================================
+        shallow_features = self.shallow_agp(layer_2_out)  # ([N, 512])
+        shallow_features = self.shallow_conv(shallow_features).squeeze()  # ([N, 256])
 
-        gloab_shallow_features = torch.cat([gloab_features, shallow_features], axis=1)
+        # shallow + gloab  ========================================================================================
+        gloab_shallow_features = torch.cat([gloab_features, shallow_features], axis=1)  # ([N, 768])
 
         # parts ========================================================================================
-        # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
-        features_G = self.avgpool(resnet_features)
-
-        ######################################################################################################################
-        # features---------------------------------------------------------------------------------------------
-        # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
-        features_H = []
+        features_G = self.avgpool(resnet_features)  # tensor g([N, 2048, 6, 1])
+        features_H = []  # 1x1 conv([N, C=256, H=6, W=1])
         for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
-        # shape（[N, C=num_classes]）---------------------------------------------------------------------------------
-        shallow_gloab_score = self.global_shallow_classifier(gloab_shallow_features)
         ######################################################################################################################
-        # Return the features_H([N,1536])***********************************************************************
+        # Return the features_H
         if not self.training:
-            features_H.append(gloab_features.unsqueeze_(2))
+            features_H.append(gloab_features.unsqueeze_(2))  # ([N,1536+768])
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
+        ######################################################################################################################
 
         batch_size = x.size(0)
-        parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
+        shallow_gloab_score = self.global_shallow_classifier(gloab_shallow_features)  # shape（[N, C=num_classes]）
+        parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
         return parts_score_list, shallow_gloab_score
 
