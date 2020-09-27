@@ -252,7 +252,7 @@ class resnet50_cbam_reid(nn.Module):
         self.gloab_conv = nn.Sequential(
             nn.Conv2d(2048, 512, 1),
             nn.BatchNorm2d(512),
-            nn.ReLU())
+            )
         self.gloab_conv.apply(weights_init_kaiming)
 
         # shallow feature===================================================================
