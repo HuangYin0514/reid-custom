@@ -323,6 +323,7 @@ class resnet50_cbam_reid(nn.Module):
         ######################################################################################################################
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
+            features_H=[]
             features_H.append(gloab_features.unsqueeze_(2))
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
