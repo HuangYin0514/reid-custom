@@ -248,20 +248,20 @@ class resnet50_cbam_reid(nn.Module):
         self.backbone = Resnet50_backbone()
         ########################################################################################################
         # gloab=============================================================================
-        self.global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.gloab = nn.Sequential(
+        self.gloab_agp = nn.AdaptiveAvgPool2d((1, 1))
+        self.gloab_conv = nn.Sequential(
             nn.Conv2d(2048, 512, 1),
             nn.BatchNorm2d(512),
             nn.ReLU())
-        self.gloab.apply(weights_init_kaiming)
+        self.gloab_conv.apply(weights_init_kaiming)
 
         # shallow feature===================================================================
-        self.shallow_global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.shallow_gloab = nn.Sequential(
+        self.shallow_agp = nn.AdaptiveAvgPool2d((1, 1))
+        self.shallow_conv = nn.Sequential(
             nn.Conv2d(512, 256, 1),
             nn.BatchNorm2d(256),
             nn.ReLU())
-        self.shallow_gloab.apply(weights_init_kaiming)
+        self.shallow_conv.apply(weights_init_kaiming)
 
         self.global_shallow_softmax = nn.Linear(768, num_classes)
         self.global_shallow_softmax.apply(weights_init_kaiming)
@@ -276,7 +276,6 @@ class resnet50_cbam_reid(nn.Module):
                 nn.Conv1d(2048, 256, kernel_size=1),
                 nn.BatchNorm1d(256),
                 nn.ReLU(inplace=True))
-            # local_conv.apply(torchtool.weights_init_kaiming)
             self.local_conv_list.append(local_conv)
         ########################################################################################################
         # Classifier for each stripe--------------------------------------------------------------------------
@@ -296,14 +295,14 @@ class resnet50_cbam_reid(nn.Module):
 
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
-        global_avgpool_features = self.global_avgpool(resnet_features)
-        gloab_features = self.gloab(global_avgpool_features).squeeze()
+        gloab_features = self.gloab_agp(resnet_features)
+        # gloab_features = self.gloab_conv(gloab_features).squeeze()
 
         # shallow feature([N, 256]) ========================================================================================
-        shallow_global_avgpool_features = self.shallow_global_avgpool(layer_2_out)
-        shallow_gloab_features = self.shallow_gloab(shallow_global_avgpool_features).squeeze()
+        shallow_features = self.shallow_agp(layer_2_out)
+        # shallow_features = self.shallow_conv(shallow_features).squeeze()
 
-        gloab_shallow_features = torch.cat([gloab_features, shallow_gloab_features], axis=1)
+        gloab_shallow_features = torch.cat([gloab_features, shallow_features], axis=1)
 
         # parts ========================================================================================
         # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
@@ -323,7 +322,6 @@ class resnet50_cbam_reid(nn.Module):
         ######################################################################################################################
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
-            features_H=[]
             features_H.append(gloab_features.unsqueeze_(2))
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
