@@ -263,8 +263,8 @@ class resnet50_cbam_reid(nn.Module):
             nn.ReLU())
         self.shallow_conv.apply(weights_init_kaiming)
 
-        self.global_shallow_softmax = nn.Linear(768, num_classes)
-        self.global_shallow_softmax.apply(weights_init_kaiming)
+        self.global_shallow_classifier = nn.Linear(768, num_classes)
+        self.global_shallow_classifier.apply(weights_init_kaiming)
 
         # part(pcb)==============================================================================
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
@@ -279,15 +279,12 @@ class resnet50_cbam_reid(nn.Module):
             self.local_conv_list.append(local_conv)
         ########################################################################################################
         # Classifier for each stripe--------------------------------------------------------------------------
-        self.fc_list = nn.ModuleList()
+        self.parts_classifier_list = nn.ModuleList()
         for _ in range(self.parts):
             fc = nn.Linear(256, num_classes)
             nn.init.normal_(fc.weight, std=0.001)
             nn.init.constant_(fc.bias, 0)
-            self.fc_list.append(fc)
-
-
-
+            self.parts_classifier_list.append(fc)
 
     def forward(self, x):
         # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
@@ -317,8 +314,7 @@ class resnet50_cbam_reid(nn.Module):
             features_H.append(stripe_features_H)
 
         # shape（[N, C=num_classes]）---------------------------------------------------------------------------------
-        shallow_gloab_features_softmax = self.global_shallow_softmax(gloab_shallow_features)
-
+        shallow_gloab_score = self.global_shallow_classifier(gloab_shallow_features)
         ######################################################################################################################
         # Return the features_H([N,1536])***********************************************************************
         if not self.training:
@@ -328,9 +324,9 @@ class resnet50_cbam_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
 
         batch_size = x.size(0)
-        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
+        parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
 
-        return logits_list, shallow_gloab_features_softmax
+        return parts_score_list, shallow_gloab_score
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
