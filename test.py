@@ -12,6 +12,8 @@ from models import build_model
 from utils import util
 
 # ---------------------- Extract features ----------------------
+
+
 def _parse_data_for_eval(data):
     imgs = data[0]
     pids = data[1]
@@ -22,18 +24,17 @@ def _parse_data_for_eval(data):
 def _extract_features(model, input):
     model.eval()
     return model(input)
-    
 
 
 # ---------------------- Start testing ----------------------
 @torch.no_grad()
 def test(model, dataset, dataset_path, batch_size, device, args, normalize_feature=False,
-         dist_metric='cosine'):
+         dist_metric='cosine', mode='train'):
     model.eval()
 
     # test dataloader------------------------------------------------------------
-    query_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'query',   args, shuffle=False, augment=False)
-    gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', args, shuffle=False, augment=False)
+    query_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'query',   args, mode=mode, shuffle=False, augment=False)
+    gallery_dataloader = getDataLoader(dataset, batch_size, dataset_path, 'gallery', args, mode=mode, shuffle=False, augment=False)
 
     # image information------------------------------------------------------------
     print('Extracting features from query set ...')

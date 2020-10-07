@@ -13,7 +13,7 @@ __dataset_factory = {
 
 
 # ---------------------- Global settings ----------------------
-def getDataLoader(dataset, batch_size, dataset_path, part, args, shuffle=True, augment=True):
+def getDataLoader(dataset, batch_size, dataset_path, part, args,mode='train',shuffle=True, augment=True):
     # check ------------------------------------------------------------
     assert part in {'train', 'query', 'gallery'}, 'part not in folders'
 
@@ -35,7 +35,8 @@ def getDataLoader(dataset, batch_size, dataset_path, part, args, shuffle=True, a
     image_dataset = __dataset_factory[dataset](root=dataset_path, part=part, transform=data_transform)
 
     # dataloader ------------------------------------------------------------
-    if args.data_sampler_type == 'softmax':
+    if args.data_sampler_type == 'softmax' or mode=='test':
+        print('random sample')
         dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
     if args.data_sampler_type == 'randomIdentitySampler':
         dataloader = torch.utils.data.DataLoader(
