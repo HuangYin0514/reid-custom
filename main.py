@@ -24,11 +24,10 @@ parser.add_argument('--dataset', type=str, default='Market1501')
 parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/data/Market-1501-v15.09.15')
 parser.add_argument('--height', type=int, default=384, help='height of the input image')
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
-parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
-parser.add_argument('--test_batch_size', default=64, type=int, help='batch_size')
+parser.add_argument('--batch_size', default=6, type=int, help='batch_size')
+parser.add_argument('--test_batch_size', default=6, type=int, help='batch_size')
 parser.add_argument('--data_sampler_type', type=str, default='randomIdentitySampler')
-parser.add_argument('--img_per_batch', type=int, default=8)
-parser.add_argument('--num_instance ', type=int, default=2)
+parser.add_argument('--num_instance', type=int, default=1)
 
 
 # Model parameters-------------------------------------------------------------
