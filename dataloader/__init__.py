@@ -3,6 +3,8 @@ import torch
 from torchvision import datasets, transforms
 from .occluded_reid import Occluded_REID
 from .market1501 import Market1501
+from .collate_batch import train_collate_fn, val_collate_fn
+from .samplers import RandomIdentitySampler, RandomIdentitySampler_alignedreid  # New add by gu
 
 __dataset_factory = {
     'Occluded_REID': Occluded_REID,
@@ -29,8 +31,17 @@ def getDataLoader(dataset, batch_size, dataset_path, part, args, shuffle=True, a
     data_transform = transforms.Compose(transform_list)
 
     # dataset ------------------------------------------------------------
+    dataloader = None
     image_dataset = __dataset_factory[dataset](root=dataset_path, part=part, transform=data_transform)
-    dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
+
+    # dataloader ------------------------------------------------------------
+    if args.data_sampler_type == 'softmax':
+        dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
+    if args.data_sampler_type == 'softmax':
+        dataloader = torch.utils.data.DataLoader(
+            image_dataset, batch_size=batch_size,
+            sampler=RandomIdentitySampler(dataset.train, args.img_per_batch, args.num_instance),
+            num_workers=4)
 
     return dataloader
 

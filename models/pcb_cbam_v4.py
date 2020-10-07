@@ -250,21 +250,21 @@ class resnet50_cbam_reid(nn.Module):
         # gloab=============================================================================
         self.gloab_agp = nn.AdaptiveAvgPool2d((1, 1))
         self.gloab_conv = nn.Sequential(
-            nn.Conv2d(2048, 512, 1),
+            nn.Conv1d(2048, 512, kernel_size=1),
             nn.BatchNorm1d(512),
-            nn.ReLU(inplace=True)) 
+            nn.ReLU(inplace=True))
         self.gloab_conv.apply(weights_init_kaiming)
 
         # shallow feature===================================================================
         self.shallow_agp = nn.AdaptiveAvgPool2d((1, 1))
         self.shallow_conv = nn.Sequential(
-            nn.Conv2d(512, 256, 1),
+            nn.Conv1d(512, 256, kernel_size=1),
             nn.BatchNorm1d(256),
             nn.ReLU(inplace=True))
         self.shallow_conv.apply(weights_init_kaiming)
 
-        self.global_shallow_classifier = nn.Linear(768, num_classes)
-        self.global_shallow_classifier.apply(weights_init_kaiming)
+        # self.global_shallow_classifier = nn.Linear(768, num_classes)
+        # self.global_shallow_classifier.apply(weights_init_kaiming)
 
         # part(pcb)==============================================================================
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
@@ -284,16 +284,18 @@ class resnet50_cbam_reid(nn.Module):
             self.parts_classifier_list.append(fc)
 
     def forward(self, x):
+        batch_size = x.size(0)
+
         # backbone(Tensor T) ========================================================================================
         resnet_features, layer_2_out = self.backbone(x)  # ([N, 2048, 24, 6])
 
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
-        gloab_features = self.gloab_agp(resnet_features)  # ([N, 2048])
+        gloab_features = self.gloab_agp(resnet_features).view(batch_size, 2048, -1) # ([N, 2048, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
         # shallow feature ========================================================================================
-        shallow_features = self.shallow_agp(layer_2_out)  # ([N, 512])
+        shallow_features = self.shallow_agp(layer_2_out).view(batch_size, 512, -1)  # ([N, 512, 1])
         shallow_features = self.shallow_conv(shallow_features).squeeze()  # ([N, 256])
 
         # shallow + gloab  ========================================================================================
@@ -315,16 +317,15 @@ class resnet50_cbam_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
         ######################################################################################################################
 
-        batch_size = x.size(0)
-        shallow_gloab_score = self.global_shallow_classifier(gloab_shallow_features)  # shape（[N, C=num_classes]）
+        # shallow_gloab_score = self.global_shallow_classifier(gloab_shallow_features)  # shape（[N, C=num_classes]）
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
-        return parts_score_list, shallow_gloab_score
+        return parts_score_list, gloab_shallow_features
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
 #       -->resnet50_cbam(return function)-->ResNet-->Bottleneck(or chose the BasicBlock)-->ChannelAttention-->SpatialAttention
-def resnet50_cbam_reid_model_v3(num_classes, **kwargs):
+def resnet50_cbam_reid_model_v4(num_classes, **kwargs):
     return resnet50_cbam_reid(
         num_classes=num_classes,
         **kwargs

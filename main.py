@@ -8,6 +8,7 @@ from models import build_model
 from train_2output import train
 from torch.backends import cudnn
 from loss.crossEntropyLabelSmoothLoss import CrossEntropyLabelSmoothLoss
+from loss.TripleLoss import TripletLoss
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -16,7 +17,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='../experiments')
-parser.add_argument('--experiment', type=str, default='resnet50_cbam_reid_model_v3')
+parser.add_argument('--experiment', type=str, default='resnet50_cbam_reid_model_v4')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset', type=str, default='Market1501')
@@ -25,6 +26,10 @@ parser.add_argument('--height', type=int, default=384, help='height of the input
 parser.add_argument('--width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=64, type=int, help='batch_size')
 parser.add_argument('--test_batch_size', default=64, type=int, help='batch_size')
+parser.add_argument('--data_sampler_type', type=str, default='randomIdentitySampler')
+parser.add_argument('--img_per_batch', type=int, default=8)
+parser.add_argument('--num_instance ', type=int, default=2)
+
 
 # Model parameters-------------------------------------------------------------
 parser.add_argument('--stripes', type=int, default=6)
@@ -68,7 +73,11 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    criterion = CrossEntropyLabelSmoothLoss(num_classes=train_dataloader.dataset.num_train_pids)
+
+    ce_labelsmooth_loss = CrossEntropyLabelSmoothLoss(num_classes=train_dataloader.dataset.num_train_pids)
+    MARGIN = 0.3
+    triplet_loss = TripletLoss(margin=MARGIN)
+    criterion = [ce_labelsmooth_loss, triplet_loss]
 
     # optimizer-----------------------------------------------------------------------------------
     base_param_ids = set(map(id, model.backbone.parameters()))

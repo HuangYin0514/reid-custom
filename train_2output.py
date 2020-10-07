@@ -4,7 +4,6 @@ from test import test
 import torch
 from utils import util
 
-
 # ---------------------- Train function ----------------------
 def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device, save_dir_path, args):
     '''
@@ -19,6 +18,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     # logger.info(model)
     logger.info('train starting...')
 
+    ce_labelsmooth_loss, triplet_loss = criterion
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
     for epoch in range(num_epochs):
 
@@ -41,11 +41,11 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             # gloab_loss = criterion(gloab_outputs, labels)
             ##################################
             parts_outputs, gloab_shallow_outputs = model(inputs)
-            gloab_shallow__loss = criterion(gloab_shallow_outputs, labels)
+            gloab_shallow__loss = triplet_loss(gloab_shallow_outputs, labels)
             # Sum up the stripe softmax loss-------------------
             part_loss = 0
             for logits in parts_outputs:
-                stripe_loss = criterion(logits, labels)
+                stripe_loss = ce_labelsmooth_loss(logits, labels)
                 part_loss += stripe_loss
             # loss = part_loss+gloab_loss+shallow_gloab_loss
             loss = part_loss+gloab_shallow__loss
