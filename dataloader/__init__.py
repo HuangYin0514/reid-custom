@@ -36,9 +36,10 @@ def getDataLoader(dataset, batch_size, dataset_path, part, args,mode='train',shu
 
     # dataloader ------------------------------------------------------------
     if args.data_sampler_type == 'softmax' or mode=='test':
-        print('random sample')
+        print('random sample mode')
         dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
-    if args.data_sampler_type == 'randomIdentitySampler':
+    elif args.data_sampler_type == 'randomIdentitySampler':
+        print('randomIdentitySampler sample mode')
         dataloader = torch.utils.data.DataLoader(
             image_dataset, batch_size=batch_size,
             sampler=RandomIdentitySampler(image_dataset, batch_size, args.num_instance),
