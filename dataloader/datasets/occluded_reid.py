@@ -13,7 +13,7 @@ from .bases import BaseImageDataset
 
 
 class Occluded_REID(BaseImageDataset):
-    
+
     dataset_dir = ''
 
     def __init__(self, root='', verbose=True, **kwargs):
@@ -29,13 +29,11 @@ class Occluded_REID(BaseImageDataset):
 
         if verbose:
             print("=> Occluded_REID loaded")
-            self.print_dataset_statistics(train, query, gallery)
+            self.print_dataset_statistics(query, query, gallery)
 
-        self.train = train
         self.query = query
         self.gallery = gallery
 
-        self.num_train_pids, self.num_train_imgs, self.num_train_cams = self.get_imagedata_info(self.train)
         self.num_query_pids, self.num_query_imgs, self.num_query_cams = self.get_imagedata_info(self.query)
         self.num_gallery_pids, self.num_gallery_imgs, self.num_gallery_cams = self.get_imagedata_info(self.gallery)
 
@@ -49,24 +47,21 @@ class Occluded_REID(BaseImageDataset):
             raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
     def _process_dir(self, dir_path, relabel=False):
-        img_paths = glob.glob(osp.join(dir_path, '*.jpg'))
-        pattern = re.compile(r'([-\d]+)_c(\d)')
-
+        img_paths = glob.glob(osp.join(dir_path, '*', '*.tif'))
+        camid = 0
         pid_container = set()
         for img_path in img_paths:
-            pid, _ = map(int, pattern.search(img_path).groups())
-            if pid == -1: continue  # junk images are just ignored
+            img_name = img_path.split('/')[-1]
+            pid = int(img_name.split('_')[0])
             pid_container.add(pid)
         pid2label = {pid: label for label, pid in enumerate(pid_container)}
 
         dataset = []
         for img_path in img_paths:
-            pid, camid = map(int, pattern.search(img_path).groups())
-            if pid == -1: continue  # junk images are just ignored
-            assert 0 <= pid <= 1501  # pid == 0 means background
-            assert 1 <= camid <= 6
-            camid -= 1  # index starts from 0
-            if relabel: pid = pid2label[pid]
+            img_name = img_path.split('/')[-1]
+            pid = int(img_name.split('_')[0])
+            if relabel:
+                pid = pid2label[pid]
             dataset.append((img_path, pid, camid))
 
         return dataset
