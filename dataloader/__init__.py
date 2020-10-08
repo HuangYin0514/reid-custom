@@ -8,7 +8,7 @@ from .datasets import init_dataset, ImageDataset
 
 
 # ---------------------- Global settings ----------------------
-def getDataLoader(args):
+def getDataLoader(dataset_name, dataset_path, args):
 
     num_workers = 4
 
@@ -17,7 +17,7 @@ def getDataLoader(args):
     val_transforms = build_transforms(args, is_train=False)
 
     # dataset ------------------------------------------------------------
-    dataset = init_dataset(args.dataset_name, root=args.dataset_path)
+    dataset = init_dataset(dataset_name, root=dataset_path)
     train_set = ImageDataset(dataset.train, train_transforms)
     num_classes = dataset.num_train_pids
 

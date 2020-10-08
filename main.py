@@ -55,7 +55,6 @@ parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vsc
 args = parser.parse_args()
 
 
-
 if __name__ == "__main__":
     # devie-------------------------------------------------------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,8 +67,13 @@ if __name__ == "__main__":
     cudnn.benchmark = True
 
     # data------------------------------------------------------------------------------------
-    train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args)
-    dataloader = [train_loader, query_loader, gallery_loader]
+    train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
+    test_loader, test_query_loader, test_gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
+
+    train_data_loader = [train_loader, query_loader, gallery_loader]
+    test_data_loader = [test_loader, test_query_loader, test_gallery_loader]
+    
+    dataloader = [train_data_loader, test_data_loader]
 
     # model------------------------------------------------------------------------------------
     model = build_model(num_classes=num_classes, args=args)
