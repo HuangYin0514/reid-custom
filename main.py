@@ -13,7 +13,6 @@ from loss.TripleLoss import TripletLoss
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
-
 # System parameters#System parameters-------------------------------------------------------------
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
