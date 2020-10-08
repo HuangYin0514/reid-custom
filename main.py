@@ -4,6 +4,7 @@ import os
 import torch
 import torch.nn as nn
 from dataloader import getDataLoader
+import dataloader
 from models import build_model
 from train_2output import train
 from torch.backends import cudnn
@@ -20,14 +21,14 @@ parser.add_argument('--save_path', type=str, default='../experiments')
 parser.add_argument('--experiment', type=str, default='resnet50_cbam_reid_model_v4')
 
 # Data parameters-------------------------------------------------------------
-parser.add_argument('--dataset', type=str, default='Market1501')
+parser.add_argument('--dataset_name', type=str, default='market1501')
 parser.add_argument('--dataset_path', type=str, default='/home/hy/vscode/data/Market-1501-v15.09.15')
-parser.add_argument('--height', type=int, default=384, help='height of the input image')
-parser.add_argument('--width', type=int, default=128, help='width of the input image')
+parser.add_argument('--img_height', type=int, default=384, help='height of the input image')
+parser.add_argument('--img_width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=6, type=int, help='batch_size')
 parser.add_argument('--test_batch_size', default=6, type=int, help='test_batch_size')
-parser.add_argument('--data_sampler_type', type=str, default='randomIdentitySampler')
-parser.add_argument('--num_instance', type=int, default=1)
+parser.add_argument('--data_sampler_type', type=str, default='RandomIdentitySampler')
+parser.add_argument('--num_instance', type=int, default=2)
 
 
 # Model parameters-------------------------------------------------------------
@@ -35,8 +36,8 @@ parser.add_argument('--stripes', type=int, default=6)
 
 
 # Train parameters-------------------------------------------------------------
-parser.add_argument('--epochs', type=int, default=1)
-parser.add_argument('--test_every', type=int, default=1)
+parser.add_argument('--epochs', type=int, default=2)
+parser.add_argument('--test_every', type=int, default=2)
 parser.add_argument('--fixbase_epoch', type=int, default=0)
 
 
@@ -61,19 +62,20 @@ if __name__ == "__main__":
     # Fix random seed---------------------------------------------------------------------------
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)
+
     # speed up compution---------------------------------------------------------------------------
     cudnn.benchmark = True
 
-    # dataset------------------------------------------------------------------------------------
-    train_dataloader = getDataLoader(args.dataset, args.batch_size, args.dataset_path, 'train',  args)
+    # data------------------------------------------------------------------------------------
+    train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args)
+    dataloader = [train_loader, query_loader, gallery_loader]
 
     # model------------------------------------------------------------------------------------
-    model = build_model(args.experiment, num_classes=train_dataloader.dataset.num_train_pids, height=args.height, width=args.width)
+    model = build_model(num_classes=num_classes, args=args)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-
-    ce_labelsmooth_loss = CrossEntropyLabelSmoothLoss(num_classes=train_dataloader.dataset.num_train_pids)
+    ce_labelsmooth_loss = CrossEntropyLabelSmoothLoss(num_classes=num_classes)
     MARGIN = 0.3
     triplet_loss = TripletLoss(margin=MARGIN)
     criterion = [ce_labelsmooth_loss, triplet_loss]
@@ -86,12 +88,11 @@ if __name__ == "__main__":
     optimizer = torch.optim.SGD(param_groups, momentum=0.9, weight_decay=5e-4, nesterov=True)
 
     # scheduler-----------------------------------------------------------------------------------
-    # scheduler = build_scheduler('pcb_scheduler', optimizer=optimizer, lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
     # save_dir_path-----------------------------------------------------------------------------------
-    save_dir_path = os.path.join(args.save_path, args.dataset)
+    save_dir_path = os.path.join(args.save_path, args.dataset_name)
     os.makedirs(save_dir_path, exist_ok=True)
 
     # train -----------------------------------------------------------------------------------
-    train(model, criterion, optimizer, scheduler, train_dataloader, args.epochs, device, save_dir_path, args)
+    train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_path, args)

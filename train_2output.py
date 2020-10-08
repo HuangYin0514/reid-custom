@@ -7,7 +7,7 @@ from utils import util
 # ---------------------- Train function ----------------------
 
 
-def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device, save_dir_path, args):
+def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_path, args):
     '''
         train
     '''
@@ -21,8 +21,10 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
     logger.info('train starting...')
 
     ce_labelsmooth_loss, triplet_loss = criterion
+    train_loader, query_loader, gallery_loader = dataloader
+    test_loader = [query_loader, gallery_loader]
     # +++++++++++++++++++++++++++++++++start++++++++++++++++++++++++++++++++++++++++
-    for epoch in range(num_epochs):
+    for epoch in range(args.epochs):
 
         model.train()
         scheduler.step(epoch)
@@ -30,8 +32,8 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
         # ===================one epoch====================
         # Training
         running_loss = 0.0
-        for data in dataloader:
-            inputs, labels, _ = data
+        for data in train_loader:
+            inputs, labels = data
             inputs = inputs.to(device)
             labels = labels.to(device)
 
@@ -57,37 +59,38 @@ def train(model, criterion, optimizer, scheduler, dataloader, num_epochs, device
             running_loss += loss.item() * inputs.size(0)
         # ===================one epoch end================
 
+        # logging-----------------------------------
         if epoch % 10 == 0:
-            epoch_loss = running_loss / len(dataloader.dataset)
-            logger.info('Epoch {}/{}'.format(epoch + 1, num_epochs))
+            epoch_loss = running_loss / len(train_loader.dataset)
+            logger.info('Epoch {}/{}'.format(epoch + 1, args.epochs))
             logger.info('Training Loss: {:.4f}'.format(epoch_loss))
-            time_remaining = (num_epochs - epoch)*(time.time() - start_time)/(epoch+1)
+            time_remaining = (args.epochs - epoch)*(time.time() - start_time)/(epoch+1)
             logger.info('time remaining  is {:.0f}h : {:.0f}m'.format(time_remaining//3600, time_remaining/60 % 60))
             # Save result to logger---------------------------------
             logger.x_epoch_loss.append(epoch + 1)
             logger.y_train_loss.append(epoch_loss)
 
         # Testing / Validating-----------------------------------
-        if (epoch + 1) % args.test_every == 0 or epoch + 1 == num_epochs:
+        if (epoch + 1) % args.test_every == 0 or epoch + 1 == args.epochs:
             # test current datset-------------------------------------
             torch.cuda.empty_cache()
-            CMC, mAP = test(model, args.dataset, args.dataset_path, args.test_batch_size, device, args, mode='test')
-            logger.info(args.dataset)
+            CMC, mAP = test(model, test_loader, args)
+            logger.info(args.dataset_name)
             logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
 
             logger.x_epoch_test.append(epoch + 1)
             logger.y_test['top1'].append(CMC[0])
             logger.y_test['mAP'].append(mAP)
-            if epoch + 1 != num_epochs:
+            if epoch + 1 != args.epochs:
                 util.save_network(model, save_dir_path, str(epoch + 1))
 
             logger.info('-' * 10)
 
             # test other dataset-------------------------------------
-            torch.cuda.empty_cache()
-            CMC, mAP = test(model, args.test_other_dataset_name, args.test_other_dataset_path, args.test_batch_size, device, args, mode='test')
-            logger.info(args.test_other_dataset_name)
-            logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
+            # torch.cuda.empty_cache()
+            # CMC, mAP = test(model, args.test_other_dataset_name, args.test_other_dataset_path, args.test_batch_size, device, args, mode='test')
+            # logger.info(args.test_other_dataset_name)
+            # logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 
     # Save the loss curve-----------------------------------

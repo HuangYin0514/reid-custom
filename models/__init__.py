@@ -30,10 +30,16 @@ __model_factory = {
 }
 
 
-def build_model(name, num_classes, **kwargs):
+def build_model(num_classes, args, **kwargs):
+
+    name = args.experiment
+    height = args.img_height
+    width = args.img_width
+
     avai_models = list(__model_factory.keys())
     if name not in avai_models:
         raise KeyError(
             'Unknown model: {}. Must be one of {}'.format(name, avai_models)
         )
-    return __model_factory[name](num_classes=num_classes, **kwargs)
+        
+    return __model_factory[name](num_classes=num_classes, height=height, width=width)

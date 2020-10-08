@@ -1,51 +1,51 @@
-import os
+from dataloader.datasets import dataset_loader
 import torch
-from torchvision import datasets, transforms
-from .occluded_reid import Occluded_REID
-from .market1501 import Market1501
+from torchvision import datasets
 from .collate_batch import train_collate_fn, val_collate_fn
 from .samplers import RandomIdentitySampler, RandomIdentitySampler_alignedreid  # New add by gu
-
-__dataset_factory = {
-    'Occluded_REID': Occluded_REID,
-    'Market1501': Market1501
-}
+from .transforms import build_transforms
+from .datasets import init_dataset, ImageDataset
 
 
 # ---------------------- Global settings ----------------------
-def getDataLoader(dataset, batch_size, dataset_path, part, args,mode='train',shuffle=True, augment=True):
-    # check ------------------------------------------------------------
-    assert part in {'train', 'query', 'gallery'}, 'part not in folders'
+def getDataLoader(args):
 
-    avai_dataset = list(__dataset_factory.keys())
-    if dataset not in avai_dataset:
-        raise KeyError('Unknown model: {}. Must be one of {}'.format(part, avai_dataset))
-    # transform ------------------------------------------------------------
-    transform_list = [
-        transforms.Resize(size=(args.height, args.width), interpolation=3),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]
-    if augment:
-        transform_list.insert(1, transforms.RandomHorizontalFlip())
-    data_transform = transforms.Compose(transform_list)
+    num_workers = 4
+
+    # transforms  --------------------------------------------------------
+    train_transforms = build_transforms(args, is_train=True)
+    val_transforms = build_transforms(args, is_train=False)
 
     # dataset ------------------------------------------------------------
-    dataloader = None
-    image_dataset = __dataset_factory[dataset](root=dataset_path, part=part, transform=data_transform)
+    dataset = init_dataset(args.dataset_name, root=args.dataset_path)
+    train_set = ImageDataset(dataset.train, train_transforms)
+    num_classes = dataset.num_train_pids
 
-    # dataloader ------------------------------------------------------------
-    if args.data_sampler_type == 'softmax' or mode=='test':
-        print('random sample mode')
-        dataloader = torch.utils.data.DataLoader(image_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
-    elif args.data_sampler_type == 'randomIdentitySampler':
-        print('randomIdentitySampler sample mode')
-        dataloader = torch.utils.data.DataLoader(
-            image_dataset, batch_size=batch_size,
-            sampler=RandomIdentitySampler(image_dataset, batch_size, args.num_instance),
-            num_workers=4)
+    # loader ------------------------------------------------------------
+    train_loader = None
+    if args.data_sampler_type == 'softmax':
+        train_loader = torch.utils.data.DataLoader(
+            train_set, batch_size=args.batch_size, shuffle=True,
+            num_workers=num_workers, collate_fn=train_collate_fn
+        )
+    else:
+        train_loader = torch.utils.data.DataLoader(
+            train_set, batch_size=args.batch_size,
+            sampler=RandomIdentitySampler(dataset.train, args.batch_size, args.num_instance),
+            num_workers=num_workers, collate_fn=train_collate_fn
+        )
 
-    return dataloader
+    query_set = ImageDataset(dataset.query, val_transforms)
+    query_loader = torch.utils.data.DataLoader(
+        query_set, batch_size=args.test_batch_size, shuffle=False,
+        num_workers=num_workers, collate_fn=val_collate_fn
+    )
+    gallery_set = ImageDataset(dataset.gallery, val_transforms)
+    gallery_loader = torch.utils.data.DataLoader(
+        query_set, batch_size=args.test_batch_size, shuffle=False,
+        num_workers=num_workers, collate_fn=val_collate_fn
+    )
+    return train_loader, query_loader, gallery_loader, num_classes
 
 
 def check_data(images, fids, img_save_path):
