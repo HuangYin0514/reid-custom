@@ -21,7 +21,7 @@ def getDataLoader(args):
     train_set = ImageDataset(dataset.train, train_transforms)
     num_classes = dataset.num_train_pids
 
-    # loader ------------------------------------------------------------
+    # train_loader ------------------------------------------------------------
     train_loader = None
     if args.data_sampler_type == 'softmax':
         train_loader = torch.utils.data.DataLoader(
@@ -35,14 +35,17 @@ def getDataLoader(args):
             num_workers=num_workers, collate_fn=train_collate_fn
         )
 
+    # query_set ------------------------------------------------------------
     query_set = ImageDataset(dataset.query, val_transforms)
     query_loader = torch.utils.data.DataLoader(
         query_set, batch_size=args.test_batch_size, shuffle=False,
         num_workers=num_workers, collate_fn=val_collate_fn
     )
+
+    # gallery_set ------------------------------------------------------------
     gallery_set = ImageDataset(dataset.gallery, val_transforms)
     gallery_loader = torch.utils.data.DataLoader(
-        query_set, batch_size=args.test_batch_size, shuffle=False,
+        gallery_set, batch_size=args.test_batch_size, shuffle=False,
         num_workers=num_workers, collate_fn=val_collate_fn
     )
     return train_loader, query_loader, gallery_loader, num_classes
