@@ -26,7 +26,7 @@ parser.add_argument('--img_height', type=int, default=384, help='height of the i
 parser.add_argument('--img_width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=6, type=int, help='batch_size')
 parser.add_argument('--test_batch_size', default=6, type=int, help='test_batch_size')
-parser.add_argument('--data_sampler_type', type=str, default='RandomIdentitySampler')
+parser.add_argument('--data_sampler_type', type=str, default='softmax')
 parser.add_argument('--num_instance', type=int, default=2)
 
 
