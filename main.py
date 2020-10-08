@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Person ReID Frame')
 parser.add_argument('--nThread', type=int, default=4, help='number of threads for data loading')
 parser.add_argument('--nGPU', type=int, default=1, help='number of GPUs')
 parser.add_argument('--save_path', type=str, default='../experiments')
-parser.add_argument('--experiment_model', type=str, default='resnet50_cbam_reid_model_v4')
+parser.add_argument('--experiment', type=str, default='resnet50_cbam_reid_model_v4')
 
 # Data parameters-------------------------------------------------------------
 parser.add_argument('--dataset_name', type=str, default='market1501')
@@ -51,6 +51,7 @@ parser.add_argument('--gamma', type=float, default=0.1)
 # test other datset parameters-------------------------------------------------------------
 parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID')
 parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID')
+
 args = parser.parse_args()
 
 
