@@ -236,108 +236,90 @@ class Resnet50_backbone(nn.Module):
         return x, layer_2_out
 
 
-class resnet50_cbam_reid(nn.Module):
+class resnet50_reid(nn.Module):
     def __init__(self, num_classes, loss='softmax', ** kwargs):
 
-        super(resnet50_cbam_reid, self).__init__()
+        super(resnet50_reid, self).__init__()
         self.parts = 6
         self.num_classes = num_classes
         self.loss = loss
 
         # backbone--------------------------------------------------------------------------
         self.backbone = Resnet50_backbone()
-
+        ########################################################################################################
         # gloab=============================================================================
-        self.global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.gloab = nn.Sequential(
-            nn.Conv2d(2048, 512, 1),
-            nn.BatchNorm2d(512),
-            nn.ReLU())
-        self.gloab.apply(weights_init_kaiming)
-        self.global_softmax = nn.Linear(512, num_classes)
-        self.global_softmax.apply(weights_init_kaiming)
+        self.gloab_agp = nn.AdaptiveAvgPool2d((1, 1))
+        self.gloab_conv = nn.Sequential(
+            nn.Conv1d(2048, 512, kernel_size=1),
+            nn.BatchNorm1d(512),
+            nn.ReLU(inplace=True))
+        self.gloab_conv.apply(weights_init_kaiming)
 
         # shallow feature===================================================================
-        self.shallow_global_avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.shallow_gloab = nn.Sequential(
-            nn.Conv2d(512, 256, 1),
-            nn.BatchNorm2d(256),
-            nn.ReLU())
-        self.shallow_gloab.apply(weights_init_kaiming)
-        self.shallow_global_softmax = nn.Linear(256, num_classes)
-        self.shallow_global_softmax.apply(weights_init_kaiming)
+        self.shallow_agp = nn.AdaptiveAvgPool2d((1, 1))
+        self.shallow_conv = nn.Sequential(
+            nn.Conv1d(512, 256, kernel_size=1),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True))
+        self.shallow_conv.apply(weights_init_kaiming)
 
-        # part==============================================================================
+        self.global_shallow_classifier = nn.Linear(512, num_classes)
+        self.global_shallow_classifier.apply(weights_init_kaiming)
+
+        # part(pcb)==============================================================================
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
-        # self.dropout = nn.Dropout(p=0.5)
-
-        # local_conv--------------------------------------------------------------------
         self.local_conv_list = nn.ModuleList()
         for _ in range(self.parts):
             local_conv = nn.Sequential(
                 nn.Conv1d(2048, 256, kernel_size=1),
                 nn.BatchNorm1d(256),
                 nn.ReLU(inplace=True))
-            # local_conv.apply(torchtool.weights_init_kaiming)
             self.local_conv_list.append(local_conv)
-
-        # Classifier for each stripe--------------------------------------------------------------------------
-        self.fc_list = nn.ModuleList()
+        # Classifier for each stripe
+        self.parts_classifier_list = nn.ModuleList()
         for _ in range(self.parts):
             fc = nn.Linear(256, num_classes)
             nn.init.normal_(fc.weight, std=0.001)
             nn.init.constant_(fc.bias, 0)
-            self.fc_list.append(fc)
+            self.parts_classifier_list.append(fc)
 
     def forward(self, x):
-        # backbone(Tensor T)([N, 2048, 24, 6]) ========================================================================================
-        resnet_features, layer_2_out = self.backbone(x)
+        batch_size = x.size(0)
+
+        # backbone(Tensor T) ========================================================================================
+        resnet_features, _ = self.backbone(x)  # ([N, 2048, 24, 6])
 
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
-        global_avgpool_features = self.global_avgpool(resnet_features)
-        gloab_features = self.gloab(global_avgpool_features).squeeze()
-
-        # shallow feature([N, 256]) ========================================================================================
-        shallow_global_avgpool_features = self.shallow_global_avgpool(layer_2_out)
-        shallow_gloab_features = self.shallow_gloab(shallow_global_avgpool_features).squeeze()
-
+        gloab_features = self.gloab_agp(resnet_features).view(batch_size, 2048, -1) # ([N, 2048, 1])
+        gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
+       
         # parts ========================================================================================
-        # tensor g([N, 2048, 6, 1])---------------------------------------------------------------------------------
-        features_G = self.avgpool(resnet_features)
-
-        ######################################################################################################################
-
-        # 1x1 conv([N, C=256, H=6, W=1])---------------------------------------------------------------------------------
-        features_H = []
+        features_G = self.avgpool(resnet_features)  # tensor g([N, 2048, 6, 1])
+        features_H = []  # 1x1 conv([N, C=256, H=6, W=1])
         for i in range(self.parts):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
-        # fc（[N, C=num_classes]）---------------------------------------------------------------------------------
-        gloab_softmax = self.global_softmax(gloab_features)
-        # shallow fc（[N, C=num_classes]）-------------------------------------------------------------------------
-        shallow_global_softmax = self.shallow_global_softmax(shallow_gloab_features)
-
         ######################################################################################################################
-        # Return the features_H([N,1536])***********************************************************************
+        # Return the features_H
         if not self.training:
-            features_H.append(gloab_features.unsqueeze_(2))
-            # features_H.append(shallow_global_softmax.unsqueeze_(2))
+            features_H.append(gloab_features.unsqueeze_(2))  # ([N,1536+768])
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
-        
-        batch_size = x.size(0)
-        logits_list = [self.fc_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]
+        ######################################################################################################################
 
-        return logits_list, gloab_softmax, shallow_global_softmax
+        shallow_gloab_score = self.global_shallow_classifier(gloab_features)  # shape（[N, C=num_classes]）
+        parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
+
+        return parts_score_list, shallow_gloab_score
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
 #       -->resnet50_cbam(return function)-->ResNet-->Bottleneck(or chose the BasicBlock)-->ChannelAttention-->SpatialAttention
-def resnet50_cbam_reid_model_v2(num_classes, **kwargs):
-    return resnet50_cbam_reid(
+def pcb_gloab(num_classes, **kwargs):
+    return resnet50_reid(
         num_classes=num_classes,
         **kwargs
     )
