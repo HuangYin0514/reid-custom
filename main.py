@@ -78,7 +78,9 @@ if __name__ == "__main__":
     query_loader = getDataLoader(args.dataset_name, args.dataset_path, 'query',   args, shuffle=False, augment=False)
     gallery_loader = getDataLoader(args.dataset_name, args.dataset_path, 'gallery', args, shuffle=False, augment=False)
     train_data_loader = [train_loader, query_loader, gallery_loader]
-    test_data_loader = [None, None]
+    test_query_loader = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, 'query',   args, shuffle=False, augment=False)
+    test_gallery_loader = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, 'gallery', args, shuffle=False, augment=False)
+    test_data_loader = [test_query_loader, test_data_loader]
     dataloader = [train_data_loader, test_data_loader]
 
     # model------------------------------------------------------------------------------------
