@@ -299,8 +299,6 @@ class resnet50_cbam_reid(nn.Module):
         shallow_features = self.shallow_conv(shallow_features).squeeze()  # ([N, 256])
 
         # shallow + gloab  ========================================================================================
-        # print(gloab_features.shape)
-        # print(shallow_features.shape)
         gloab_shallow_features = torch.cat([gloab_features, shallow_features], axis=1)  # ([N, 768])
 
         # parts ========================================================================================
@@ -313,7 +311,7 @@ class resnet50_cbam_reid(nn.Module):
         ######################################################################################################################
         # Return the features_H
         if not self.training:
-            # features_H.append(gloab_features.unsqueeze_(2))  # ([N,1536+768])
+            features_H.append(gloab_features.unsqueeze_(2))  # ([N,1536+768])
             v_g = torch.cat(features_H, dim=1)
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)

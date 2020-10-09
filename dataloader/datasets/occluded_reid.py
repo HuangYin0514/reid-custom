@@ -27,7 +27,7 @@ class Occluded_REID(BaseImageDataset):
 
         train = self._process_dir(self.train_dir, relabel=True)
         query = self._process_dir(self.query_dir, relabel=False)
-        gallery = self._process_dir(self.gallery_dir, relabel=False)
+        gallery = self._process_dir(self.gallery_dir, relabel=False, is_query=False)
 
         if verbose:
             print("=> Occluded_REID loaded")
@@ -52,9 +52,12 @@ class Occluded_REID(BaseImageDataset):
         if not osp.exists(self.gallery_dir):
             raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
-    def _process_dir(self, dir_path, relabel=False):
+    def _process_dir(self, dir_path, relabel=False, is_query=True):
         img_paths = glob.glob(osp.join(dir_path, '*', '*.tif'))
-        camid = 0
+        if is_query:
+            camid = 0
+        else:
+            camid = 1        
         pid_container = set()
         for img_path in img_paths:
             img_name = img_path.split('/')[-1]
