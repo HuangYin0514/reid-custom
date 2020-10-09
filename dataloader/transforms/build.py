@@ -3,8 +3,6 @@
 
 import torchvision.transforms as T
 
-from .transforms import RandomErasing
-
 
 def build_transforms(args, is_train=True):
     MEAN = [0.485, 0.456, 0.406]
@@ -15,17 +13,14 @@ def build_transforms(args, is_train=True):
 
     if is_train:
         transform = T.Compose([
-            T.Resize(IMG_SIZE),
+            T.Resize(IMG_SIZE, interpolation=3),
             T.RandomHorizontalFlip(),
-            # T.Pad(cfg.INPUT.PADDING),
-            # T.RandomCrop(cfg.INPUT.SIZE_TRAIN),
             T.ToTensor(),
             normalize_transform,
-            # RandomErasing(probability=cfg.INPUT.RE_PROB, mean=cfg.INPUT.PIXEL_MEAN)
         ])
     else:
         transform = T.Compose([
-            T.Resize(IMG_SIZE),
+            T.Resize(IMG_SIZE, interpolation=3),
             T.ToTensor(),
             normalize_transform
         ])
