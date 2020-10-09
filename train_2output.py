@@ -25,7 +25,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
     train_data_loader, val_data_loader = dataloader
 
     train_loader, query_loader, gallery_loader = train_data_loader
-    test_loader, test_query_loader, test_gallery_loader = val_data_loader
+    test_other_loader, test_query_loader, test_gallery_loader = val_data_loader
 
     val_loader = [query_loader, gallery_loader]
     test_loader = [test_query_loader, test_gallery_loader]
