@@ -23,7 +23,6 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
     ce_labelsmooth_loss, triplet_loss = criterion
 
     train_data_loader, val_data_loader = dataloader
-
     train_loader, query_loader, gallery_loader = train_data_loader
     test_query_loader, test_gallery_loader = val_data_loader
 
@@ -40,7 +39,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
         # Training
         running_loss = 0.0
         for data in train_loader:
-            inputs, labels = data
+            inputs, labels,_ = data
             inputs = inputs.to(device)
             labels = labels.to(device)
 
@@ -94,11 +93,11 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
 
             logger.info('-' * 10)
 
-            # test other dataset-------------------------------------
-            torch.cuda.empty_cache()
-            CMC, mAP = test(model, test_loader, args)
-            logger.info(args.test_other_dataset_name)
-            logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
+            # # test other dataset-------------------------------------
+            # torch.cuda.empty_cache()
+            # CMC, mAP = test(model, test_loader, args)
+            # logger.info(args.test_other_dataset_name)
+            # logger.info('Testing: top1:%.4f top5:%.4f top10:%.4f mAP:%.4f' % (CMC[0], CMC[4], CMC[9], mAP))
     # +++++++++++++++++++++++++++++++++start end+++++++++++++++++++++++++++++++++
 
     # Save the loss curve-----------------------------------

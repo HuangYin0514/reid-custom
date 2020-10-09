@@ -67,20 +67,26 @@ if __name__ == "__main__":
     cudnn.benchmark = True
 
     # data------------------------------------------------------------------------------------
-    train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
-    test_loader, test_query_loader, test_gallery_loader, test_num_classes = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, args=args)
+    # train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
+    # test_loader, test_query_loader, test_gallery_loader, test_num_classes = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, args=args)
 
+    # train_data_loader = [train_loader, query_loader, gallery_loader]
+    # test_data_loader = [test_query_loader, test_gallery_loader]
+
+    # dataloader = [train_data_loader, test_data_loader]
+    train_loader = getDataLoader(args.dataset_name, args.dataset_path, 'train',  args)
+    query_loader = getDataLoader(args.dataset_name, args.dataset_path, 'query',   args, shuffle=False, augment=False)
+    gallery_loader = getDataLoader(args.dataset_name, args.dataset_path, 'gallery', args, shuffle=False, augment=False)
     train_data_loader = [train_loader, query_loader, gallery_loader]
-    test_data_loader = [test_query_loader, test_gallery_loader]
-
+    test_data_loader = [None, None]
     dataloader = [train_data_loader, test_data_loader]
 
     # model------------------------------------------------------------------------------------
-    model = build_model(num_classes=num_classes, args=args)
+    model = build_model(num_classes=train_loader.dataset.num_train_pids, args=args)
     model = model.to(device)
 
     # criterion-----------------------------------------------------------------------------------
-    ce_labelsmooth_loss = CrossEntropyLabelSmoothLoss(num_classes=num_classes)
+    ce_labelsmooth_loss = CrossEntropyLabelSmoothLoss(num_classes=train_loader.dataset.num_train_pids)
     MARGIN = 0.3
     triplet_loss = TripletLoss(margin=MARGIN)
     criterion = [ce_labelsmooth_loss, triplet_loss]
