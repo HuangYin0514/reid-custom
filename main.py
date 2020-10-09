@@ -6,7 +6,7 @@ import torch.nn as nn
 from dataloader import getDataLoader
 import dataloader
 from models import build_model
-from train_2output import train
+from train import train
 from torch.backends import cudnn
 from loss.crossEntropyLabelSmoothLoss import CrossEntropyLabelSmoothLoss
 from loss.TripleLoss import TripletLoss
