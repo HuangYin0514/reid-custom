@@ -300,9 +300,9 @@ class resnet50_reid(nn.Module):
 
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
-        gloab_features = self.gloab_agp(resnet_features).view(batch_size, 2048, -1) # ([N, 2048, 1])
+        gloab_features = self.gloab_agp(resnet_features).view(batch_size, 2048, -1)  # ([N, 2048, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
-       
+
         # parts ========================================================================================
         features_G = self.avgpool(resnet_features)  # tensor g([N, 2048, 6, 1])
         features_H = []  # 1x1 conv([N, C=256, H=6, W=1])
@@ -322,12 +322,12 @@ class resnet50_reid(nn.Module):
         gloab_score = self.global_shallow_classifier(gloab_features)  # shape（[N, C=num_classes]）
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
-        return parts_score_list, gloab_score
+        return parts_score_list, gloab_score, gloab_features
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
 #       -->resnet50_cbam(return function)-->ResNet-->Bottleneck(or chose the BasicBlock)-->ChannelAttention-->SpatialAttention
-def pcb_gloab(num_classes, **kwargs):
+def pcb_gloab_triplet(num_classes, **kwargs):
     return resnet50_reid(
         num_classes=num_classes,
         **kwargs
