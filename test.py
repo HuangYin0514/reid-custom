@@ -1,15 +1,7 @@
-import argparse
-import os
-
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.backends import cudnn
-
-from dataloader import getDataLoader
 from metrics import distance, rank
-from models import build_model
-from utils import util
 
 # ---------------------- Extract features ----------------------
 
