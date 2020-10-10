@@ -69,8 +69,8 @@ if __name__ == "__main__":
     # data------------------------------------------------------------------------------------
     train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
     print(args.test_other_dataset_path)
-    print(args.test_other_dataset_name)
-    test_loader, test_query_loader, test_gallery_loader, test_num_classes = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, args=args)
+    print(args.test_other_dataset)
+    test_loader, test_query_loader, test_gallery_loader, test_num_classes = getDataLoader(args.test_other_dataset, args.test_other_dataset_path, args=args)
 
     train_data_loader = [train_loader, query_loader, gallery_loader]
     test_data_loader = [test_query_loader, test_gallery_loader]
