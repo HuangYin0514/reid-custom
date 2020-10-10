@@ -50,7 +50,7 @@ parser.add_argument('--gamma', type=float, default=0.1)
 
 # test other datset parameters-------------------------------------------------------------
 parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID')
-parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID')
+parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID123')
 
 args = parser.parse_args()
 
