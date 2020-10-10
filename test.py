@@ -1,6 +1,5 @@
 import argparse
 import os
-from test_module import test_dataloader
 
 import numpy as np
 import torch
