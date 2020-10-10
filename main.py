@@ -49,7 +49,7 @@ parser.add_argument('--decay_every', type=int, default=20)
 parser.add_argument('--gamma', type=float, default=0.1)
 
 # test other datset parameters-------------------------------------------------------------
-parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID')
+parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID123')
 parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID123')
 
 args = parser.parse_args()
@@ -69,6 +69,7 @@ if __name__ == "__main__":
     # data------------------------------------------------------------------------------------
     train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
     print(args.test_other_dataset_path)
+    print(args.test_other_dataset_name)
     test_loader, test_query_loader, test_gallery_loader, test_num_classes = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, args=args)
 
     train_data_loader = [train_loader, query_loader, gallery_loader]
