@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@文件        :pcb_gloab.py
-@说明        :利用pcb和gloab特征，损失函数为CE
-@时间        :2020/10/10 17:28:14
+@文件        :pcb_gloab_triplet.py
+@说明        :增加三元组损失
+@时间        :2020/10/10 17:26:20
 @作者        :HuangYin
 @版本        :1.0
 '''
-
-
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torchvision import models
+from utils import torchtool
 import math
 import torch.utils.model_zoo as model_zoo
 
@@ -319,10 +319,10 @@ class resnet50_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
         ######################################################################################################################
 
-        shallow_gloab_score = self.global_shallow_classifier(gloab_features)  # shape（[N, C=num_classes]）
+        gloab_score = self.global_shallow_classifier(gloab_features)  # shape（[N, C=num_classes]）
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
-        return parts_score_list, shallow_gloab_score
+        return parts_score_list, gloab_score
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)

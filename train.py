@@ -42,6 +42,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
             inputs, labels = data
             inputs = inputs.to(device)
             labels = labels.to(device)
+            print(labels)
 
             optimizer.zero_grad()
             # with torch.set_grad_enabled(True):-------------
