@@ -26,7 +26,7 @@ parser.add_argument('--img_height', type=int, default=384, help='height of the i
 parser.add_argument('--img_width', type=int, default=128, help='width of the input image')
 parser.add_argument('--batch_size', default=6, type=int, help='batch_size')
 parser.add_argument('--test_batch_size', default=6, type=int, help='test_batch_size')
-parser.add_argument('--data_sampler_type', type=str, default='softmax')
+parser.add_argument('--data_sampler_type', type=str, default='RandomIdentitySampler')
 parser.add_argument('--num_instance', type=int, default=2)
 
 
@@ -49,8 +49,8 @@ parser.add_argument('--decay_every', type=int, default=20)
 parser.add_argument('--gamma', type=float, default=0.1)
 
 # test other datset parameters-------------------------------------------------------------
-parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID123')
-parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID123')
+parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID')
+parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID')
 
 args = parser.parse_args()
 
