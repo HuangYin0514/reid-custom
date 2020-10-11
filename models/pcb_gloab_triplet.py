@@ -319,10 +319,9 @@ class resnet50_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
         ######################################################################################################################
 
-        gloab_score = self.global_classifier(gloab_features)  # shape（[N, C=num_classes]）
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
-        return parts_score_list, gloab_score, gloab_features
+        return parts_score_list, None, gloab_features
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
