@@ -13,6 +13,7 @@ from torch import nn
 from torch.nn import functional as F
 import math
 import torch.utils.model_zoo as model_zoo
+from .rga_module import RGA_Module
 
 
 __all__ = ['ResNet', 'resnet18_cbam', 'resnet34_cbam', 'resnet50_cbam', 'resnet101_cbam',
@@ -263,16 +264,28 @@ class resnet50_reid(nn.Module):
             nn.ReLU(inplace=True))
         self.gloab_conv.apply(weights_init_kaiming)
 
-        # shallow feature===================================================================
-        self.shallow_agp = nn.AdaptiveAvgPool2d((1, 1))
-        self.shallow_conv = nn.Sequential(
-            nn.Conv1d(512, 256, kernel_size=1),
-            nn.BatchNorm1d(256),
-            nn.ReLU(inplace=True))
-        self.shallow_conv.apply(weights_init_kaiming)
-
-        self.global_classifier = nn.Linear(512, num_classes)
-        self.global_classifier.apply(weights_init_kaiming)
+        # rga module--------------------------------------------------------------------------
+        branch_name = 'rgas'
+        if 'rgasc' in branch_name:
+            spa_on = True
+            cha_on = True
+        elif 'rgas' in branch_name:
+            spa_on = True
+            cha_on = False
+        elif 'rgac' in branch_name:
+            spa_on = False
+            cha_on = True
+        else:
+            raise NameError
+        spa_on = False
+        cha_on = True
+        s_ratio = 8
+        c_ratio = 8
+        d_ratio = 8
+        height = 384
+        width = 128
+        self.rga_att = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
+                                  cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
 
         # part(pcb)==============================================================================
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
@@ -299,6 +312,7 @@ class resnet50_reid(nn.Module):
 
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
+        gloab_features = self.rga_att(resnet_features)
         gloab_features = self.gloab_agp(resnet_features).view(batch_size, 2048, -1)  # ([N, 2048, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
@@ -325,7 +339,7 @@ class resnet50_reid(nn.Module):
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
 #       -->resnet50_cbam(return function)-->ResNet-->Bottleneck(or chose the BasicBlock)-->ChannelAttention-->SpatialAttention
-def pcb_gloab_triplet(num_classes, **kwargs):
+def pcb_gloab_rga(num_classes, **kwargs):
     return resnet50_reid(
         num_classes=num_classes,
         **kwargs
