@@ -2,7 +2,8 @@
 # -*- encoding: utf-8 -*-
 '''
 @文件        :pcb_gloab_triplet.py
-@说明        :增加三元组损失
+@说明        :增加三元组损失 
+              93.23% 79.81% 64.30% 56.67% reid-custom-v213
 @时间        :2020/10/10 17:26:20
 @作者        :HuangYin
 @版本        :1.0
@@ -10,8 +11,6 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from torchvision import models
-from utils import torchtool
 import math
 import torch.utils.model_zoo as model_zoo
 
