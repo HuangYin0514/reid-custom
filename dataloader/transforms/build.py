@@ -2,6 +2,7 @@
 
 
 import torchvision.transforms as T
+from .transforms import RandomErasing
 
 
 def build_transforms(args, is_train=True):
@@ -17,6 +18,7 @@ def build_transforms(args, is_train=True):
             T.RandomHorizontalFlip(),
             T.ToTensor(),
             normalize_transform,
+            RandomErasing(probability=0.5, mean=MEAN)
         ])
     else:
         transform = T.Compose([
