@@ -272,8 +272,8 @@ class resnet50_reid(nn.Module):
             nn.ReLU(inplace=True))
         self.shallow_conv.apply(weights_init_kaiming)
 
-        self.global_shallow_classifier = nn.Linear(512, num_classes)
-        self.global_shallow_classifier.apply(weights_init_kaiming)
+        self.global_classifier = nn.Linear(512, num_classes)
+        self.global_classifier.apply(weights_init_kaiming)
 
         # part(pcb)==============================================================================
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
@@ -319,7 +319,7 @@ class resnet50_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
         ######################################################################################################################
 
-        gloab_score = self.global_shallow_classifier(gloab_features)  # shape（[N, C=num_classes]）
+        gloab_score = self.global_classifier(gloab_features)  # shape（[N, C=num_classes]）
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
         return parts_score_list, gloab_score, gloab_features
