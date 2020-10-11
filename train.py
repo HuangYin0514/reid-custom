@@ -59,7 +59,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
                 stripe_loss = ce_labelsmooth_loss(logits, labels)
                 part_loss += stripe_loss
             # loss = part_loss+gloab_loss+shallow_gloab_loss
-            loss = part_loss+id_triplet_loss[0]
+            loss = part_loss+0.1*id_triplet_loss[0]
             loss.backward()
             optimizer.step()
 
