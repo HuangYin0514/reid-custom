@@ -313,7 +313,7 @@ class resnet50_reid(nn.Module):
         ######################################################################################################################
         # gloab([N, 512]) ========================================================================================
         gloab_features = self.rga_att(resnet_features)
-        gloab_features = self.gloab_agp(resnet_features).view(batch_size, 2048, -1)  # ([N, 2048, 1])
+        gloab_features = self.gloab_agp(gloab_features).view(batch_size, 2048, -1)  # ([N, 2048, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
         # parts ========================================================================================
