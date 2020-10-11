@@ -1,4 +1,14 @@
-# encoding: utf-8
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@文件        :build.py
+@说明        :修改随机擦除模型参数
+                0.5-->0.1
+@时间        :2020/10/11 17:09:02
+@作者        :HuangYin
+@版本        :1.0
+'''
+
 
 
 import torchvision.transforms as T
