@@ -257,9 +257,10 @@ class resnet50_reid(nn.Module):
         self.backbone = Resnet50_backbone()
         ########################################################################################################
         # gloab=============================================================================
+        self.k11_conv = nn.Conv2d(2048, 512, kernel_size=1)
         self.gloab_agp = nn.AdaptiveAvgPool2d((1, 1))
         self.gloab_conv = nn.Sequential(
-            nn.Conv1d(2048, 512, kernel_size=1),
+            nn.Conv1d(512, 512, kernel_size=1),
             nn.BatchNorm1d(512),
             nn.ReLU(inplace=True))
         self.gloab_conv.apply(weights_init_kaiming)
@@ -284,7 +285,7 @@ class resnet50_reid(nn.Module):
         d_ratio = 8
         height = 384
         width = 128
-        self.rga_att = RGA_Module(2048, (height//16)*(width//16), use_spatial=spa_on, use_channel=cha_on,
+        self.rga_att = RGA_Module(512, 24*8, use_spatial=spa_on, use_channel=cha_on,
                                   cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
 
         # part(pcb)==============================================================================
@@ -308,12 +309,14 @@ class resnet50_reid(nn.Module):
         batch_size = x.size(0)
 
         # backbone(Tensor T) ========================================================================================
-        resnet_features, _ = self.backbone(x)  # ([N, 2048, 24, 6])
+        resnet_features, _ = self.backbone(x)  # ([N, 2048, 24, 8])
 
         ######################################################################################################################
+
         # gloab([N, 512]) ========================================================================================
-        gloab_features = self.rga_att(resnet_features)
-        gloab_features = self.gloab_agp(gloab_features).view(batch_size, 2048, -1)  # ([N, 2048, 1])
+        gloab_features = self.k11_conv(resnet_features)
+        gloab_features = self.rga_att(gloab_features)
+        gloab_features = self.gloab_agp(gloab_features).view(batch_size, 512, -1)  # ([N, 2048, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
         # parts ========================================================================================
