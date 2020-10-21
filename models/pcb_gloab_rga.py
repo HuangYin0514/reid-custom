@@ -266,7 +266,7 @@ class resnet50_reid(nn.Module):
         self.gloab_conv.apply(weights_init_kaiming)
 
         # rga module--------------------------------------------------------------------------
-        branch_name = 'rgac'
+        branch_name = 'rgasc'
         if 'rgasc' in branch_name:
             spa_on = True
             cha_on = True
@@ -278,8 +278,6 @@ class resnet50_reid(nn.Module):
             cha_on = True
         else:
             raise NameError
-        spa_on = False
-        cha_on = True
         s_ratio = 8
         c_ratio = 8
         d_ratio = 8
