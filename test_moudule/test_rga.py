@@ -9,7 +9,7 @@ from rga_module import RGA_Module
 
 if __name__ == "__main__":
     # rga module--------------------------------------------------------------------------
-    branch_name = 'rgac'
+    branch_name = 'rgasc'
     if 'rgasc' in branch_name:
         spa_on = True
         cha_on = True
