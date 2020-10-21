@@ -21,8 +21,6 @@ if __name__ == "__main__":
         cha_on = True
     else:
         raise NameError
-    spa_on = False
-    cha_on = True
     s_ratio = 6
     c_ratio = 6
     d_ratio = 6
