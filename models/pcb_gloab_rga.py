@@ -266,7 +266,7 @@ class resnet50_reid(nn.Module):
         self.gloab_conv.apply(weights_init_kaiming)
 
         # rga module--------------------------------------------------------------------------
-        branch_name = 'rgasc'
+        branch_name = 'rgas'
         if 'rgasc' in branch_name:
             spa_on = True
             cha_on = True
