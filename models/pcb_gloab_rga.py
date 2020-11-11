@@ -281,8 +281,6 @@ class resnet50_reid(nn.Module):
         s_ratio = 8
         c_ratio = 8
         d_ratio = 8
-        height = 384
-        width = 128
         self.rga_att = RGA_Module(512, 24*8, use_spatial=spa_on, use_channel=cha_on,
                                   cha_ratio=c_ratio, spa_ratio=s_ratio, down_ratio=d_ratio)
 
