@@ -50,8 +50,9 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
             # shallow_gloab_loss = criterion(shallow_global_softmax, labels)
             # gloab_loss = criterion(gloab_outputs, labels)
             ##################################
-            parts_outputs, gloab_outputs, gloab_features = model(inputs)
-            id_triplet_loss = triplet_loss(gloab_features, labels)
+            parts_outputs, gloab_features, fusion_feature = model(inputs)
+            id_gloab_features_triplet_loss = triplet_loss(gloab_features, labels)
+            id_fusion_feature_triplet_loss = triplet_loss(fusion_feature, labels)
             # gloab_loss = ce_labelsmooth_loss(gloab_outputs, labels)
             # Sum up the stripe softmax loss-------------------
             part_loss = 0
@@ -59,7 +60,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
                 stripe_loss = ce_labelsmooth_loss(logits, labels)
                 part_loss += stripe_loss
             # loss = part_loss+gloab_loss+shallow_gloab_loss
-            loss = part_loss+0.1*id_triplet_loss[0]
+            loss = part_loss+0.1*id_gloab_features_triplet_loss[0]+0.1*id_fusion_feature_triplet_loss[0]
             loss.backward()
             optimizer.step()
 

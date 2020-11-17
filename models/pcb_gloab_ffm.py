@@ -287,12 +287,12 @@ class Feature_Fusion_Module(nn.Module):
 
         ########################################################################################################
         # compute the features,with weigth --------------------------------------------------
-        features_H = []
+        weighted_feature = torch.zeros_like(parts_features[0])
         for i in range(self.parts):
             new_feature = parts_features[i] * w_of_parts[:, i].view(batch_size, 1, 1).expand(parts_features[i].shape)
-            features_H.append(new_feature)
+            weighted_feature += new_feature
 
-        return features_H
+        return weighted_feature.squeeze()
 
 
 class resnet50_reid(nn.Module):
@@ -363,6 +363,10 @@ class resnet50_reid(nn.Module):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
+        ########################################################################################################
+        # feature fusion module--------------------------------------------------------------------------
+        fusion_feature = self.ffm(gloab_features, features_H)
+
         ######################################################################################################################
         # Return the features_H if inference--------------------------------------------------------------------------
         if not self.training:
@@ -371,15 +375,11 @@ class resnet50_reid(nn.Module):
             v_g = F.normalize(v_g, p=2, dim=1)
             return v_g.view(v_g.size(0), -1)
 
-        ########################################################################################################
-        # feature fusion module--------------------------------------------------------------------------
-        features_H = self.ffm(gloab_features, features_H)
-
         ######################################################################################################################
         # classifier--------------------------------------------------------------------------
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
-        return parts_score_list, None, gloab_features
+        return parts_score_list, gloab_features, fusion_feature
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
