@@ -323,7 +323,7 @@ class resnet50_reid(nn.Module):
         self.rga_att = custom_RGA_Module()
 
         ########################################################################################################
-        # part(pcb--------------------------------------------------------------------------
+        # part(pcb）--------------------------------------------------------------------------
         self.avgpool = nn.AdaptiveAvgPool2d((self.parts, 1))
         self.local_conv_list = nn.ModuleList()
         for _ in range(self.parts):
@@ -333,13 +333,19 @@ class resnet50_reid(nn.Module):
                 nn.ReLU(inplace=True))
             self.local_conv_list.append(local_conv)
 
-        # Classifier for each stripe
+        # Classifier for each stripe （parts feature）-------------------------------------
         self.parts_classifier_list = nn.ModuleList()
         for _ in range(self.parts):
             fc = nn.Linear(256, num_classes)
             nn.init.normal_(fc.weight, std=0.001)
             nn.init.constant_(fc.bias, 0)
             self.parts_classifier_list.append(fc)
+
+        ########################################################################################################
+        # fusion_feature_classifier（fusion feature）--------------------------------------------------------------------------
+        self.fusion_feature_classifier = nn.Linear(256, num_classes)
+        nn.init.normal_(self.fusion_feature_classifier.weight, std=0.001)
+        nn.init.constant_(self.fusion_feature_classifier.bias, 0)
 
     def forward(self, x):
         batch_size = x.size(0)
@@ -348,14 +354,12 @@ class resnet50_reid(nn.Module):
         # backbone(Tensor T) --------------------------------------------------------------------------
         resnet_features, _ = self.backbone(x)  # ([N, 2048, 24, 8])
 
-        ######################################################################################################################
         # gloab([N, 512]) --------------------------------------------------------------------------
         gloab_features = self.k11_conv(resnet_features)
         gloab_features = self.rga_att(gloab_features)
         gloab_features = self.gloab_agp(gloab_features).view(batch_size, 512, -1)  # ([N, 512, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
-        ######################################################################################################################
         # parts --------------------------------------------------------------------------
         features_G = self.avgpool(resnet_features)  # tensor g([N, 2048, 6, 1])
         features_H = []  # contains 6 ([N, 256, 1])
@@ -363,7 +367,6 @@ class resnet50_reid(nn.Module):
             stripe_features_H = self.local_conv_list[i](features_G[:, :, i, :])
             features_H.append(stripe_features_H)
 
-        ########################################################################################################
         # feature fusion module--------------------------------------------------------------------------
         fusion_feature = self.ffm(gloab_features, features_H)
 
@@ -376,10 +379,13 @@ class resnet50_reid(nn.Module):
             return v_g.view(v_g.size(0), -1)
 
         ######################################################################################################################
-        # classifier--------------------------------------------------------------------------
+        # classifier(parts)--------------------------------------------------------------------------
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
-        return parts_score_list, gloab_features, fusion_feature
+        # classifier(fusion feature)--------------------------------------------------------------------------
+        fusion_score = self.fusion_feature_classifier(fusion_feature)
+
+        return parts_score_list, gloab_features, fusion_score
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
