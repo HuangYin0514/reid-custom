@@ -383,9 +383,9 @@ class resnet50_reid(nn.Module):
         parts_score_list = [self.parts_classifier_list[i](features_H[i].view(batch_size, -1)) for i in range(self.parts)]  # shape list（[N, C=num_classes]）
 
         # classifier(fusion feature)--------------------------------------------------------------------------
-        fusion_score = self.fusion_feature_classifier(fusion_feature)
+        # fusion_score = self.fusion_feature_classifier(fusion_feature)
 
-        return parts_score_list, gloab_features, fusion_score
+        return parts_score_list, gloab_features, fusion_feature
 
 
 # resnet50_cbam_reid_model(return function)-->resnet50_cbam_reid-->Resnet50_backbone(reid backbone)
