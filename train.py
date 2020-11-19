@@ -78,7 +78,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
             logger.y_train_loss.append(epoch_loss)
 
         # Testing / Validating-----------------------------------
-        if (epoch + 1) % args.test_every == 0 or epoch + 1 == args.epochs:
+        if (epoch + 1) % args.test_every == 0 or epoch + 1 == args.epochs or epoch > args.epochs-5:
             # test current datset-------------------------------------
             torch.cuda.empty_cache()
             CMC, mAP = test(model, val_loader, args)
