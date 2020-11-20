@@ -10,6 +10,8 @@ from train import train
 from torch.backends import cudnn
 from loss.crossEntropyLabelSmoothLoss import CrossEntropyLabelSmoothLoss
 from loss.TripleLoss import TripletLoss
+import numpy as np
+import random
 
 parser = argparse.ArgumentParser(description='Person ReID Frame')
 
@@ -56,16 +58,23 @@ args = parser.parse_args()
 
 
 if __name__ == "__main__":
+    # ============================================================================================================
     # devie-------------------------------------------------------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Fix random seed---------------------------------------------------------------------------
-    torch.manual_seed(1)
-    torch.cuda.manual_seed_all(1)
+    def set_seed(seed):
+        np.random.seed(seed)
+        random.seed(seed)
+        torch.manual_seed(seed)  # cpu
+        torch.cuda.manual_seed_all(seed)  # gpu
+        torch.backends.cudnn.deterministic = True
+    set_seed(1)
 
     # speed up compution---------------------------------------------------------------------------
     cudnn.benchmark = True
 
+    # ============================================================================================================
     # data------------------------------------------------------------------------------------
     train_loader, query_loader, gallery_loader, num_classes = getDataLoader(args.dataset_name, args.dataset_path, args=args)
     test_loader, test_query_loader, test_gallery_loader, test_num_classes = getDataLoader(args.test_other_dataset_name, args.test_other_dataset_path, args=args)
@@ -75,6 +84,7 @@ if __name__ == "__main__":
 
     dataloader = [train_data_loader, test_data_loader]
 
+    # ============================================================================================================
     # model------------------------------------------------------------------------------------
     model = build_model(num_classes=num_classes, args=args)
     model = model.to(device)
@@ -95,9 +105,11 @@ if __name__ == "__main__":
     # scheduler-----------------------------------------------------------------------------------
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
+    # ============================================================================================================
     # save_dir_path-----------------------------------------------------------------------------------
     save_dir_path = os.path.join(args.save_path, args.dataset_name)
     os.makedirs(save_dir_path, exist_ok=True)
 
+    # ============================================================================================================
     # train -----------------------------------------------------------------------------------
     train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_path, args)
