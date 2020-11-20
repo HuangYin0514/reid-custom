@@ -39,33 +39,45 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
         # Training
         running_loss = 0.0
         for data in train_loader:
+            ####################################################################
+            # data-------------------------------------------------
             inputs, labels = data
             inputs = inputs.to(device)
             labels = labels.to(device)
 
+            ####################################################################
+            # optimizer-------------------------------------------------
             optimizer.zero_grad()
-            # with torch.set_grad_enabled(True):-------------
-            #############3 output#############
-            # parts_outputs, gloab_outputs, shallow_global_softmax = model(inputs)
-            # shallow_gloab_loss = criterion(shallow_global_softmax, labels)
-            # gloab_loss = criterion(gloab_outputs, labels)
-            ##################################
+
+            ####################################################################
+            # model-------------------------------------------------
             parts_scores, gloab_features, fusion_feature = model(inputs)
+
+            ####################################################################
+            # gloab loss-------------------------------------------------
             gloab_loss = triplet_loss(gloab_features, labels)
+
+            # fusion loss-------------------------------------------------
             fusion_loss = triplet_loss(fusion_feature, labels)
-            # Sum up the stripe softmax loss-------------------
+
+            # parts loss-------------------------------------------------
             part_loss = 0
             for logits in parts_scores:
                 stripe_loss = ce_labelsmooth_loss(logits, labels)
                 part_loss += stripe_loss
-            # loss = part_loss+gloab_loss+shallow_gloab_loss
-            loss = part_loss+0.1*gloab_loss[0]+0.01*fusion_loss[0]
+
+            # all of loss -------------------------------------------------
+            loss = part_loss + 0.1*gloab_loss[0] + 0.01*fusion_loss[0]
+
+            ####################################################################
+            # update the parameters-------------------------------------------------
             loss.backward()
             optimizer.step()
 
             running_loss += loss.item() * inputs.size(0)
-        # ===================one epoch end================
-
+            
+        # one epoch end======================================================
+        ####################################################################
         # logging-----------------------------------
         if epoch % 10 == 0:
             epoch_loss = running_loss / len(train_loader.dataset)
