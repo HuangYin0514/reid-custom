@@ -247,7 +247,7 @@ class Resnet50_backbone(nn.Module):
 
 def custom_RGA_Module():
     # 自定义 RGA 模块
-    branch_name = 'rgasc'
+    branch_name = 'rgas'
     if 'rgasc' in branch_name:
         spa_on = True
         cha_on = True
