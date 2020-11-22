@@ -4,9 +4,6 @@ from test import test
 import torch
 from utils import util
 
-# ---------------------- Train function ----------------------
-
-
 def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_path, args):
     '''
         train
@@ -76,7 +73,6 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
 
             running_loss += loss.item() * inputs.size(0)
             
-        # one epoch end======================================================
         ####################################################################
         # logging-----------------------------------
         if epoch % 10 == 0:
