@@ -63,9 +63,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Fix random seed---------------------------------------------------------------------------
-    seed = 1
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    torch.manual_seed(1)
+    torch.cuda.manual_seed_all(1)
 
     # speed up compution---------------------------------------------------------------------------
     cudnn.benchmark = True
