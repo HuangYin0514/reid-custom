@@ -51,8 +51,11 @@ parser.add_argument('--decay_every', type=int, default=20)
 parser.add_argument('--gamma', type=float, default=0.1)
 
 # test other datset parameters-------------------------------------------------------------
-parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID')
-parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID')
+# parser.add_argument('--test_other_dataset_name', type=str, default='Occluded_REID')
+# parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Occluded_REID')
+
+parser.add_argument('--test_other_dataset_name', type=str, default='Paritial_REID')
+parser.add_argument('--test_other_dataset_path', type=str, default='/home/hy/vscode/data/Partial-REID_Dataset')
 
 args = parser.parse_args()
 
