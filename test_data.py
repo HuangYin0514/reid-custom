@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 '''
 @文件        :test_data.py
-@说明        :
+@说明        :测试partialdataset数据集
 @时间        :2020/11/23 11:46:07
 @作者        :HuangYin
 @版本        :1.0
