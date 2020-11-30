@@ -275,7 +275,7 @@ class Feature_Fusion_Module(nn.Module):
 
         self.parts = parts
 
-        self.fc1 = nn.Linear(512, 6)
+        self.fc1 = nn.Linear(256, 6)
         self.fc1.apply(weights_init_kaiming)
 
     def forward(self, gloab_feature, parts_features):
@@ -315,8 +315,8 @@ class resnet50_reid(nn.Module):
         self.k11_conv = nn.Conv2d(2048, 512, kernel_size=1)
         self.gloab_agp = nn.AdaptiveAvgPool2d((1, 1))
         self.gloab_conv = nn.Sequential(
-            nn.Conv1d(512, 512, kernel_size=1),
-            nn.BatchNorm1d(512),
+            nn.Conv1d(512, 256, kernel_size=1),
+            nn.BatchNorm1d(256),
             nn.ReLU(inplace=True))
         self.gloab_conv.apply(weights_init_kaiming)
 
