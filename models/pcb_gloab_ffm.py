@@ -356,7 +356,7 @@ class resnet50_reid(nn.Module):
 
         # gloab([N, 512]) --------------------------------------------------------------------------
         gloab_features = self.k11_conv(resnet_features)
-        # gloab_features = self.rga_att(gloab_features)
+        gloab_features = self.rga_att(gloab_features)
         gloab_features = self.gloab_agp(gloab_features).view(batch_size, 512, -1)  # ([N, 512, 1])
         gloab_features = self.gloab_conv(gloab_features).squeeze()  # ([N, 512])
 
