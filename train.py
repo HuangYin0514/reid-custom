@@ -64,7 +64,7 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
                 part_loss += stripe_loss
 
             # all of loss -------------------------------------------------
-            loss = part_loss + 0.1*gloab_loss[0] + 0.015*fusion_loss[0]
+            loss = part_loss + 0.2*gloab_loss[0] + 0.015*fusion_loss[0]
 
             ####################################################################
             # update the parameters-------------------------------------------------
