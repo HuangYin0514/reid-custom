@@ -65,11 +65,11 @@ def train(model, criterion, optimizer, scheduler, dataloader, device, save_dir_p
 
             # all of loss -------------------------------------------------
             loss_alph = 0.1
-            loss_beta = 0.03
+            loss_beta = 0
             loss = part_loss + loss_alph*gloab_loss[0] + loss_beta*fusion_loss[0]
 
             ####################################################################
-            # update the parameters-------------------------------------------------
+            # update the parameters---------------iu----------------------------------
             loss.backward()
             optimizer.step()
 
